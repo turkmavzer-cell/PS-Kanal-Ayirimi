@@ -11,8 +11,8 @@ src_path, out_dir = sys.argv[1], sys.argv[2]
 DOT = int(sys.argv[3]) if len(sys.argv) > 3 else 3
 NK = int(sys.argv[4]) if len(sys.argv) > 4 else 6
 PPI, WCM = 600, 38.5
-SPEC_L = 96.5           # bu parlakligin ustu = mürekkep yok (parlama)
-SHARP = 0.5             # yerel kontrast miktari
+SPEC_L = float(os.environ.get('SPEC_L', 96.5))           # bu parlakligin ustu = mürekkep yok (parlama)
+SHARP = float(os.environ.get('SHARP', 0.5))             # yerel kontrast miktari
 t0 = time.time()
 def log(*a): print(f"[{time.time()-t0:6.1f}s]", *a, flush=True)
 os.makedirs(os.path.join(out_dir, "Acik_Tisort"), exist_ok=True); os.makedirs(os.path.join(out_dir, "kesim"), exist_ok=True)
@@ -125,8 +125,9 @@ img = np.ascontiguousarray(lin(comp))
 pal = np.ascontiguousarray(lin(np.vstack([pap[None], rgbp]).astype(np.float32)))
 here = os.path.dirname(os.path.abspath(__file__)); so = os.path.join(here,'fs_dither.so')
 if not os.path.exists(so): os.system(f'gcc -O2 -shared -fPIC -o {so} {os.path.join(here,"fs_dither.c")}')
+GAM = int(os.environ.get('GAM', 1))
 lib = ctypes.CDLL(so); idx = np.zeros((dh,dw), np.uint8)
-lib.fs_dither(img.ctypes.data_as(ctypes.c_void_p), dh, dw, pal.ctypes.data_as(ctypes.c_void_p), len(pal), idx.ctypes.data_as(ctypes.c_void_p))
+lib.fs_dither(img.ctypes.data_as(ctypes.c_void_p), dh, dw, pal.ctypes.data_as(ctypes.c_void_p), len(pal), idx.ctypes.data_as(ctypes.c_void_p), GAM)
 idx[spec] = 0
 log('hata yayilimi bitti', idx.shape)
 big = np.repeat(np.repeat(idx, DOT, 0), DOT, 1)
@@ -155,5 +156,7 @@ np.save(os.path.join(out_dir,'_scale.npy'), np.array([s]))
 # yuz kirpmalari (kaynak koordinati, 600 PPI)
 def cropsrc(x0_, y0__, x1_, y1__):
     return canvas[int(y0__*s):int(y1__*s), int(x0_*s):int(x1_*s)]
+import re as _re
+cx=[int(v) for v in os.environ.get('CROP','390,770,500,890').split(',')]; Image.fromarray(cropsrc(*cx)).save(os.path.join(out_dir,'_kirp.png'))
 Image.fromarray(cropsrc(440,700,540,780)).save(os.path.join(out_dir,'_goz.png')); Image.fromarray(cropsrc(480,820,600,900)).save(os.path.join(out_dir,'_cene.png'))
 log('BITTI')

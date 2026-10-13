@@ -36,3 +36,5 @@
 - [ ] Ayicik koyu tisort seti (underbase) istenirse eklenecek.
 - [ ] hibrit.py: palet ve esikler otomatik/parametrik olsun; `--koyu` secenegi.
 - [ ] Mandala v4: lacivert cizgi kanali, krem/sari kontur, potrace tabanli arac `tools/` altina alinacak.
+- [ ] Ayicik: `GAM=1 SHARP=0.25` ile tum gorseli yeniden ayir, cene/göz/yanak kontrol et, filmleri ve PSD'yi guncelle.
+- [ ] Koyu bolgelerdeki dagnik tek beyaz noktalar (parlama maskesi kalintisi) temizlensin.

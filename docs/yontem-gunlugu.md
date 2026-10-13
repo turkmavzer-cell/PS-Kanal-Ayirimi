@@ -57,6 +57,13 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Ilk parlama esigi L>93 krem burnu beyaza ucurdu (yanlis); 96,5'e cikarilinca krem korundu, göz parlamasi beyaz kaldi.
 - Sonuc: cene detayi geri geldi, burun kremi korundu. 7 film (6 kahve tonu + lacivert; rozet en yakin kahve filmini paylasir). Bilinen: koyu bolgelerde dagnik tek beyaz noktalar (parlama maskesi kalintisi); nokta 2 px (0,085 mm) elek icin zor, 3 px varsayilan.
 
+## v5.1: Sol yanak "parcalanma" teshisi ve duzeltme (13 Ekim, denendi, henuz uygulanmadi)
+- Belirti: ayicigin sol yanaginda duz karamel yamalar + yogun siyah noktali alanlar, arada orta ton yok (`docs/ornekler/ayicik_yanak_parcalanma_karsilastirma.png`).
+- Neden: (1) en yakin murekkep secimi dogrusal isik uzayinda yapiliyordu; orada koyu tonlar birbirine cok yakin, orta-koyu kahveler secilmiyor, piksel ya Karamel'e ya Siyah Kahve'ye gidiyordu. (2) yerel kontrast (unsharp 0,5) bu sicramayi buyuttu. (3) kaynak bu bolgede zaten bulanik.
+- Duzeltme: secimi algisal uzayda yap (C kodunda `sqrt` ile gama 2; `fs_dither(..., gam=1)`), hata yayilimi dogrusal kalir. `tools/hibrit2.py` artik `GAM` (varsayilan 1), `SHARP`, `SPEC_L`, `CROP` ortam degiskenlerini okur.
+- Karsilastirma: algisal secim + kontrast 0,5 orta tonlari geri getirdi; kontrast 0 en yumusak ama tuy dokusu az. Onerilen: algisal secim + kontrast ~0,25 (denenmedi, tum goruntude cene ve göz parlamasi tekrar kontrol edilmeli).
+- Not: `onizleme`/PSD ciktilari v5 (dogrusal secim, kontrast 0,5) halinde; yeni ayar henuz filmlere uygulanmadi.
+
 ---
 
 ## Şablon (yeni deneme için)
