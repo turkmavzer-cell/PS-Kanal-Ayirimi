@@ -36,6 +36,19 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
   5. Palet otomatik tespit edilmiyor (v2'deki tespit kodu v3'e taşınmadı).
 - Karar: Usta ve atölye onayı bekleniyor (elek, film türü, kayıt tipi).
 
+## v3.1 / v4 denemeleri (mandala, 13 Ekim) - sadece kirpma testi, repoya arac eklenmedi
+- v3'te 4 mürekkep kaldigi icin acik mavi yaprak, turuncu vurgu, krem kontur kayboldu; medyan 5 + ince parca temizligi ince kalem cizgilerini kalinlastirdi/kopardi.
+- Deneme A: 6 mürekkep + once buyut, olasilik haritasini Gaussian yumusat, sonra argmax: kenarlar akici, ama lacivert/beyaz sinirinda sahte acik mavi/turuncu kiymik cikti (kenar ara tonu).
+- Deneme B: A + bilateral kaynak temizligi + kucuk parca silme + potrace (`potracer`, bezier) ile vektor iz: kiymiklar gitti, akici egriler; ama ince cizgiler kalinlasti, kucuk sari cicek/krem kontur kayboldu. Kaynak zaten bulanik; kalem dokusu kaynaktan cikmaz.
+- Siradaki: lacivert cizgiyi parlaklik tabanli ayri kanal olarak iz surmek, yumusatmayi yalniz genis alanlara uygulamak, krem/sari kontur icin ayri mürekkep denemek. Daha yuksek cozunurluklu kaynak sorulacak.
+
+## v-hibrit: Ayicik gorseli (fotografik + duz yazi) (guncel, acik tisort)
+- Girdi: `Tatli Gunun Sevimli Ayicigi.png` 1024x1536 (yazi lacivert duz, rozet duz, ayicik kabarik tuy fotograf gibi). Arac: `tools/hibrit.py` + `tools/fs_dither.c` (C, serpantin Floyd-Steinberg, dogrusal RGB).
+- Yontem: yazi + yildizlar + rozet = tramsiz spot (alt-piksel kenar, kübik buyutme + esik); ayicik = dagitik tram (FM) cok mürekkepli indeks ayrimi (Krem, Karamel, Kahve, Koyu Kahve); rozet duz dolgusu Koyu Kahve filmini paylasir. Nokta 3 px = 0,127 mm @600 PPI (varsayilan); 2 px = 0,085 mm cok ince. 5 film, 9094x13641.
+- Test sonucu: ayicigi duz renge indirmek (5 kahve) tuyu leke leke yamaya cevirdi, kullanici kabul etmedi. Dagitik tram kabul.
+- Not: bilesen analizi ile ayicik/rozet otomatik ayrildi (en buyuk iki bilesen); lacivert = Lab b* < -8. Palet kodda sabit.
+- Bilinen: tram noktasinin elek/pozlama ile basilabilirligi atölyeye sorulmali; koyu tisort seti yapilmadi; esik/anti-aliasing icin trap yok (indeks noktalar birbirine degmez).
+
 ---
 
 ## Şablon (yeni deneme için)

@@ -29,3 +29,10 @@
 ## Karar bekleyenler
 - Usta ve atölye onayı: v3 filmleri gerçek baskıda denenmedi.
 - Koyu tişörtte lacivert-siyah anahatların görünmemesi tasarım değişikliği gerektirebilir (anahat rengi).
+
+
+## Eklenenler (13 Ekim)
+- [ ] Atölye: 0,127 mm (3 px) ve 0,085 mm (2 px) dagitik tram noktasi hangi elekte basilabilir? Ayicik icin FM mi AM mi tercih?
+- [ ] Ayicik koyu tisort seti (underbase) istenirse eklenecek.
+- [ ] hibrit.py: palet ve esikler otomatik/parametrik olsun; `--koyu` secenegi.
+- [ ] Mandala v4: lacivert cizgi kanali, krem/sari kontur, potrace tabanli arac `tools/` altina alinacak.

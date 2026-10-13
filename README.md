@@ -28,7 +28,7 @@ Photoshop'ta Multichannel Spot Color belge: `tools/photoshop/koyu_tisort_photosh
 - `docs/proje-talimatlari.md`: Claude Project talimat metni
 - `docs/arastirma/`: Perplexity promptu ve kaynaklı araştırma raporu
 - `docs/ornekler/`: önizleme görselleri
-- `tools/`: `tramsiz.py` (güncel), `photoshop/` (JSX), `arsiv/` (yanlış çıkan eski denemeler, referans için)
+- `tools/`: `tramsiz.py` (duz renkli isler), `hibrit.py` + `fs_dither.c` (duz + fotografik hibrit isler), `photoshop/` (JSX), `arsiv/` (yanlis eski denemeler)
 
 ## Notlar
 Orijinal görseller ve üretilen filmler (büyük dosyalar) repoya konmaz.

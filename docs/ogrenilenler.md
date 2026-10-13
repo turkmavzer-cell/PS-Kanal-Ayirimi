@@ -84,3 +84,10 @@ Sonuç gözle kontrol edildi (önizlemeler `docs/ornekler/`): %100'de kenarlar d
 
 ## 6. Açık / belirsiz noktalar
 Bkz. `docs/acik-sorular.md`.
+
+
+## Hibrit gorsel dersi (Ayicik, 13 Ekim)
+- "Her sey tramsiz" kuralı yalnizca duz renkli tasarim icin dogru. Tek gorselde hem duz yazi hem fotografik bolge varsa **hibrit**: duz kisimlar tramsiz spot, fotografik kisim dagitik tram (veya tramli spot). Once gorseli bolgelere ayir.
+- Fotografik tuyu 5 duz kahveye indirmek kabul edilmedi (yamali illustrasyon gorunumu).
+- Kenar ara tonlari (lacivert/beyaz sinirinda) yumusak harita ile bile sahte mürekkep kiymigi uretir; kucuk parca silme ve alt-piksel esik gerekir.
+- Kaynak kalitesi sinirdir: bulanik/yapay zeka kaynaginda kalem dokusu geri gelmez; yuksek cozunurluk veya vektor kaynak iste.
