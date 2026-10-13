@@ -64,6 +64,13 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Karsilastirma: algisal secim + kontrast 0,5 orta tonlari geri getirdi; kontrast 0 en yumusak ama tuy dokusu az. Onerilen: algisal secim + kontrast ~0,25 (denenmedi, tum goruntude cene ve göz parlamasi tekrar kontrol edilmeli).
 - Not: `onizleme`/PSD ciktilari v5 (dogrusal secim, kontrast 0,5) halinde; yeni ayar henuz filmlere uygulanmadi.
 
+## Katmanli PSD uretimi: kavisli yazi + ozgun cizim top (13 Ekim)
+- Istek: referans gorsel (Lakers sweatshirt fotografi) logolar olmadan, yalniz yazilar + ortadaki top, her nesne ayri katman, yuksek kalite PSD.
+- Karar: marka logolari/wordmark yeniden uretilmedi; top ozgun cizildi (referans kopyalanmadi). Referans 663x738 kumas fotografi oldugu icin kaynaktan "net" cikarim yapilmadi, yerlesim sifirdan kuruldu.
+- Arac: `tools/tasarim/kavisli_yazi_top.py` (Orbitron OFL fontu, U yolu uzerinde harf harf yerlestirme, kontur yazi, degisken kalinlikli tarama, ortografik dunya haritasi kareli doldurma, 3B dikisler) -> katman PNG'leri + `katmanlar.json`; `tools/tasarim/katman_psd_olustur.jsx` Photoshop'ta PSD'yi kurar ve kaydeder (betikle kaydetmek Farkli Kaydet penceresi sorunlarini onler).
+- Cikti: 7087x7889 px, 600 PPI (30 x 33,4 cm), 9 katman (Zemin, Yazi Ic cumle, Dis sol/alt/sag, Top Govde/Tarama/Harita/Dikisler). Katmanlar raster (canli metin degil).
+- Ders: Claude masaustu uygulamasi odagi calan betik sirasinda one gecebiliyor; `open_application` + ekran goruntusu ile dogrula. Photoshop betik calisirken tiklamalar islenmez.
+
 ---
 
 ## Şablon (yeni deneme için)
