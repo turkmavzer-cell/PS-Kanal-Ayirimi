@@ -49,6 +49,14 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Not: bilesen analizi ile ayicik/rozet otomatik ayrildi (en buyuk iki bilesen); lacivert = Lab b* < -8. Palet kodda sabit.
 - Bilinen: tram noktasinin elek/pozlama ile basilabilirligi atölyeye sorulmali; koyu tisort seti yapilmadi; esik/anti-aliasing icin trap yok (indeks noktalar birbirine degmez).
 
+## v5: Seffaf kesim + 6 mürekkepli dagitik tram (Ayicik, guncel)
+- Arac: `tools/hibrit2.py` (+ `fs_dither.c`). Kullanim: `python3 tools/hibrit2.py girdi.png cikti [nokta_px=3] [obje_murekkep=6]`.
+- Sorunlar (v-hibrit): (1) cene altı gölge detayi kayboldu: gölgeler en koyu mürekkepten (66,41,32) daha koyuydu, o aralik duz bloga ezildi; (2) göz parlamasi soldu: kucuk beyaz leke buyutmede yumusadi, hata yayilimi onu mürekkep noktasina cevirdi.
+- Cozum: duz beyaz arka plandan seffaf kesim (kenara bagli beyaz = arka plan, kenar kusaginda color-to-alpha + renk temizligi; icerideki beyazlar korunur) -> `Kesim/ayicik_seffaf.png`, `yazi_rozet_seffaf.png`; obje icin k-means ile 6 mürekkep, en koyu mürekkep = gercek en koyu golge tonu (3. yuzdelik ortalamasi); parlama korumasi (L>96,5 ve alfa>0,5 = mürekkep yok); yerel kontrast (unsharp 5 px, miktar 0,5).
+- Olcum (ayicik, nokta bulaniklastirilmis ΔE): 4 renk ort 8,3 / en kotu %5 24,4; 5 renk 6,8/15,4; 6 renk 5,5/12,4; 7 renk 5,1/13,0; 8 renk 4,4/11,3 -> 6 renk dirsek noktasi.
+- Ilk parlama esigi L>93 krem burnu beyaza ucurdu (yanlis); 96,5'e cikarilinca krem korundu, göz parlamasi beyaz kaldi.
+- Sonuc: cene detayi geri geldi, burun kremi korundu. 7 film (6 kahve tonu + lacivert; rozet en yakin kahve filmini paylasir). Bilinen: koyu bolgelerde dagnik tek beyaz noktalar (parlama maskesi kalintisi); nokta 2 px (0,085 mm) elek icin zor, 3 px varsayilan.
+
 ---
 
 ## Şablon (yeni deneme için)

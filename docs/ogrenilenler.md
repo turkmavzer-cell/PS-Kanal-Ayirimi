@@ -91,3 +91,8 @@ Bkz. `docs/acik-sorular.md`.
 - Fotografik tuyu 5 duz kahveye indirmek kabul edilmedi (yamali illustrasyon gorunumu).
 - Kenar ara tonlari (lacivert/beyaz sinirinda) yumusak harita ile bile sahte mürekkep kiymigi uretir; kucuk parca silme ve alt-piksel esik gerekir.
 - Kaynak kalitesi sinirdir: bulanik/yapay zeka kaynaginda kalem dokusu geri gelmez; yuksek cozunurluk veya vektor kaynak iste.
+
+- Fotografik objede en koyu mürekkep gercek en koyu golgeden acik olmamali, yoksa golge detayi duz bloga ezilir. Palet tonlari goruntunun tonal araligini (en koyu dahil) kapsamali.
+- Kucuk parlamalar (goz isigi) tramla/yumusatmayla solar: acik esik ustu pikselleri "mürekkep yok" yap. Esik cok dusuk olursa (L>93) krem alanlar da beyaza ucar; ~96,5 kullan.
+- Fotograf+duz yazi iceren gorselde: once duz arka plandan seffaf kesim (alfa + renk temizligi) uretmek hem kenar kalitesini hem beyaz ayrimini iyilestirir.
+- 4 yerine 6 mürekkep: ayicikta ΔE ortalamasi 8,3 -> 5,5, en kotu %5 24,4 -> 12,4 (olcum, `yontem-gunlugu.md` v5).
