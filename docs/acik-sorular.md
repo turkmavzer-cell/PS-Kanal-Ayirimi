@@ -1,0 +1,31 @@
+# Açık sorular ve yapılacaklar
+
+## Atölyeye / ustaya sorulacaklar
+(Araştırma raporundan uyarlanmıştır.)
+1. Elek: renkler ve underbase için hangi T numarası ve iplik kalınlığı?
+2. Film mi basılıyor, doğrudan kalıba (CTS/CTP) mı pozlanıyor? Film ise hangi yazıcı, Dmax yeterli mi?
+3. Mürekkep: plastisol, su bazlı, pigment, discharge?
+4. Tişört rengi? Lacivert-siyah alanlar basılmayıp kumaş rengi mi kullanılsın?
+5. Underbase düz mü tramlı mı? Choke miktarı (punto/mm)?
+6. Pres manuel mi otomatik mi? Butt registration mı trap mı? Trap payı kaç mm?
+7. Dosya biçimi: katmanlı vektör (AI/PDF/EPS), spot kanallı PSD/TIFF, ayrı 1-bit film? Çözünürlük?
+8. En ince çizgi ve en küçük yazı için minimum kalınlık (ör. 0,3 mm / 8 pt)? Mandala çizgileri açılır mı?
+9. Renk sırası ve ara kurutma?
+10. Kayıt işareti biçimi, pozlama testi, ilk provayı onaya gönderme? Ayrıca **"lap" ile ne kastediliyor?** (araştırmada doğrulanamadı)
+
+## Geliştirme listesi
+- [ ] Palet otomatik tespiti `tramsiz.py`'ye eklensin (v2'deki k-means + ara ton eleme kodu). Renk sayısı komut satırından verilebilsin (`--renk 6`).
+- [ ] Turuncu/kırmızı ve krem/beyaz ayrımı için palet genişletme seçeneği.
+- [ ] Anahattı açık kapalı şekiller (örn. "E" harfi): kapatma/doldurma seçeneği veya uyarı.
+- [ ] Vektöre çevirme (trace) yolu: ne zaman raster yeterli, ne zaman şart?
+- [ ] Kayıt işaretleri ve film kenar bilgisi (renk adı) eklensin.
+- [ ] Film çıkışı: 1-bit PNG yeterli mi, TIFF/PDF mi isteniyor?
+- [ ] Belgeyi PSB olarak kaydetme adımı.
+- [ ] Birleşik JSX betiğinin renk atamayı neden uygulamadığı; tek betiğe indirme.
+- [ ] Gerçek degradeli tasarımlar için **karma** (düz + yalnızca geçişte tram) mod; tramı RIP'e bırakma.
+- [ ] Başka test görselleri (logo, yazı ağırlıklı, degradeli) ile yöntemi sına.
+- [ ] Underbase seçenekleri: düz / tramlı (%60–70), Siyah altına konma tercihi.
+
+## Karar bekleyenler
+- Usta ve atölye onayı: v3 filmleri gerçek baskıda denenmedi.
+- Koyu tişörtte lacivert-siyah anahatların görünmemesi tasarım değişikliği gerektirebilir (anahat rengi).

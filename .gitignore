@@ -1,0 +1,15 @@
+# Orijinal görseller ve üretilen filmler
+*.jfif
+*.jpg
+*.jpeg
+Acik_Tisort/
+Koyu_Tisort/
+cikti*/
+_labels_cache.npy
+*.psd
+*.psb
+__pycache__/
+*.pyc
+
+# docs/ornekler içindeki küçük önizlemeler repoda kalır
+!docs/ornekler/*.png
