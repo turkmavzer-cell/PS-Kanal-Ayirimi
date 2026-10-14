@@ -158,3 +158,11 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - %100 kesit (elbise yaprakları, yüz/saç): film kompozitinde tram düzgün; kalan: turkuaz çiçekte birkaç izole koyu kahve nokta.
 - Photoshop 2021: `psd_olustur_tek_adim.jsx` File > Scripts > Browse ile çalıştı, 6 spot kanallı PSD (≈17,7 MB) oluştu.
 - Teslim: İndirilenler\Emprime_Kiz_Acik_508\ (Acik_Tisort\*.png, kanallar_hibrit.json, PSD).
+
+## v10 — Ayı (ayı netleştirilmiş.png 4096x6144), tek aşamalı, açık tişört, 6 mürekkep, AM 45 lpi/15°, 508 PPI — 2026-10-14
+- Kullanıcı (soruldu): açık tişört, 6 mürekkep, zemin hepsi, tek aşamalı. Girdi DPI meta yok (508 varsayıldı); film boyutu 7700x11550 (38,5 cm, `hibrit2.py` WCM).
+- Önce `bolge_am.py` denendi: ayı için uygunsuz (iki ton ailesi, Lacivert yerine iki "Mor", Turkuaz %0, siyah/krem yok) → atıldı. Ayı/yazı karışık işlerde `AM=1 LPI=45 ANG=15 python3 tools/hibrit2.py girdi cikti 3 5` (5 obje mürekkebi + Lacivert = 6) kullanıldı.
+- Paletler: Orta Kahve %2,35, Kahve %5,6, Koyu Kahve %5,7, Lacivert %9,8, Siyah Kahve %6,0, Siyah %0,42. Bölge testi dE ort 9,4–13,6 (hedef <8), düz leke %0–2,9.
+- kalite_kontrol: ≤3 px mikro nokta %9–15 → bileşen ≤3 px silindi (toplam ~9300), sonra 0. Kalan uyarı: Siyah kapsama %0,42.
+- Gözle %100 (kulak/yüz/göz, karın, yazı): tram ve tüy dokusu iyi, yazı düz ve keskin, düz leke yok.
+- Photoshop 2021: PSD 6 spot kanallı oluştu. Not: `computer_open_application` sonrası Claude penceresi öne geçti; tıklamalar yine de Photoshop'a ulaştı, dosya penceresi açık kaldı.
