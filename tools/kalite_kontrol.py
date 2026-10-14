@@ -54,6 +54,23 @@ for nm, fn, rgb, a in films:
     info.append(f'  {nm:<18} bilesen {tot_n}, <= {tiny_area}px olan {tn} (%{frac*100:.1f})')
     if frac > 0.10 and tn > 2000: warn.append(f'{nm}: %{frac*100:.0f} bilesen <= {tiny_area}px (elekte tutunmayacak mikro nokta)')
 
+# duz (tramsiz) bolgeler: kenar pürüzlülügü + film rengi kaynak renge uyuyor mu (kanallar_hibrit.json 'duz_bolgeler', hibrit2.py yazar)
+# Olcu (ayi, 2026-10-14): cikintili rozet 0,070, temiz lacivert yazi 0,006 px/px; esik 0,03. Acma (5 px elips) ile silinen piksel / acilmis kenar uzunlugu.
+for w_ in J.get('uyarilar', []): warn.append(w_)
+for dz in J.get('duz_bolgeler', []):
+    fa = [f for f in films if f[1] == dz.get('film')]
+    if not fa or not dz.get('bbox'): continue
+    nm, fn, rgb, a = fa[0]; bx, by, bw, bh = dz['bbox']
+    m = a[by:by+bh, bx:bx+bw].astype(np.uint8)
+    mo = cv2.morphologyEx(m, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
+    cs, _ = cv2.findContours(mo, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE); per = max(sum(len(c) for c in cs), 1)
+    rough = float((m.sum()-mo.sum())/per)
+    sl = cv2.cvtColor(np.array([[dz['kaynak_rgb']]], np.float32)/255, cv2.COLOR_RGB2Lab)[0, 0]
+    il = cv2.cvtColor(np.array([[rgb]], np.float32)/255, cv2.COLOR_RGB2Lab)[0, 0]; de = float(np.linalg.norm(sl-il))
+    info.append(f'  duz bolge {dz["ad"]:<10} film {nm}: kenar puruzlulugu {rough:.3f}, renk dE {de:.1f}')
+    if rough > 0.03: warn.append(f'duz bolge {dz["ad"]} ({nm}): kenar cikinti/capakli (puruzluluk {rough:.3f} > 0,03); FLAT_R ile yumusat ya da kaynagi kontrol et')
+    if de > 12: warn.append(f'duz bolge {dz["ad"]}: film rengi {nm} kaynak renkten dE {de:.0f} uzak (rozet/logo yanlis murekkebe gitmis olabilir)')
+
 # zit renk beneği: murekkebin tonu, kaynak pikselin tonundan >110 derece farkliysa (genel kural, her renk cifti)
 if srcp:
     src = np.array(Image.open(srcp).convert('RGB'))

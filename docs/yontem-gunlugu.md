@@ -166,3 +166,8 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - kalite_kontrol: ≤3 px mikro nokta %9–15 → bileşen ≤3 px silindi (toplam ~9300), sonra 0. Kalan uyarı: Siyah kapsama %0,42.
 - Gözle %100 (kulak/yüz/göz, karın, yazı): tram ve tüy dokusu iyi, yazı düz ve keskin, düz leke yok.
 - Photoshop 2021: PSD 6 spot kanallı oluştu. Not: `computer_open_application` sonrası Claude penceresi öne geçti; tıklamalar yine de Photoshop'a ulaştı, dosya penceresi açık kaldı.
+
+## hibrit2.py düz rozet düzeltmesi (kod, çalıştırılmadı) — 2026-10-14
+- Değişiklik: rozet maskesi `Fo8` (ham kaynak) + `al ≥ 0,5`; `FLAT_R` (varsayılan 1,0) açma+medyan; rozet mürekkebi dE uyarısı; `BADGE_INK_OWN`; json'a `duz_bolgeler` ve `uyarilar`.
+- Kırpma testi (mevcut ayı rozet filmi): açma r=2 ardından medyan 9 → çıkıntılar gitti, harf/halka bozulmadı, alan değişimi %0,1.
+- `kalite_kontrol.py`: düz bölge kenar pürüzlülüğü + renk dE; eski çıktıda rozet 0,070 / dE 19 uyarı verdi, lacivert 0,006 / dE 0 temiz.

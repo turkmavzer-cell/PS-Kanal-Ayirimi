@@ -179,3 +179,12 @@ Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol ara
 - Çil gibi küçük ayrıntılar yumuşatmadan ve oylamadan korunmalı (yumuşatılmamış kaynak + hata artarsa geri dön).
 
 - [kullanıcı, 2026-10-14] "Repoda güncelleme yap" denince yalnızca repo değişir; ayrım çalıştırıp İndirilenler'e yazmak ve Photoshop'a geçmek istenmemişti (v9 bu yüzden istenmeden üretildi).
+
+## Düz rozet/logo çapağı ve yanlış renk (ayı, 2026-10-14)
+- Belirti: ayıdaki oval rozetin DIŞ kenarında çapak/çıkıntı (iç beyaz halka temiz); rozet kahve iken filmde neredeyse siyah (Siyah Kahve).
+- Neden 1 (kenar): `hibrit2.py` düz rozet maskesini color-to-alpha ile düzeltilmiş rengten (`Fc`) hesaplıyordu. Kenar kuşağında renk, küçük alfaya bölündüğü için (alfa ≥0,25) piksel gürültüsü 4 kata kadar büyüyor; eşik bu gürültüyü çıkıntıya çevirdi. Kuşak yalnızca kenara bağlı arka planla temas eden dış kenarda var, bu yüzden iç halka temiz çıktı. Lacivert yazı alfa kapısı (`al ≥ 0,5`) kullandığı için temizdi; rozette kapı yoktu. Kaynak kenar pürüzsüzdü (kontrol edildi), hata araçta.
+- Neden 2 (renk): rozet rengi doğru ölçüldü (73,42,32) ama paletin en yakın mürekkebi Lab'da Siyah Kahve (dE 19); palette orta-koyu kahve yoktu. Düz alan tek mürekkeple basıldığı için palet ona göre seçilmeli ya da uyarı çıkmalı.
+- Düzeltme: rozet maskesi ham kaynak renginden + alfa kapısıyla; açma (5 px) + medyan (9 px) ile ince çıkıntı silinir (`FLAT_R`, 0 = kapalı); rozet–mürekkep dE > 12 ise uyarı; `BADGE_INK_OWN=1` rozete ayrı mürekkep (ek film) verir.
+- Kural: düz (tramsız) bölgede kenar rengi bölmeyle büyütülmez; alfa kapısı her düz bölgede olmalı; düz bölgenin film rengi kaynaktan dE ≤ 12 olmalı, değilse ayrı mürekkep ya da paleti düzelt.
+- Kontrol: `kalite_kontrol.py` artık `kanallar_hibrit.json` içindeki `duz_bolgeler` için kenar pürüzlülüğü (eşik 0,03; çıkıntılı rozet 0,070, temiz yazı 0,006) ve renk dE ölçer. Eski ayı çıktısında iki hata da yakalandı.
+- Sınır: düzeltmenin `hibrit2.py` kısmı yalnız derleme ve film kırpması üzerinde açma+medyan denemesiyle sınandı; uçtan uca ayıda yeniden çalıştırılmadı (kullanıcı istemedi). Bir sonraki çalıştırmada kalite kontrolle doğrula.

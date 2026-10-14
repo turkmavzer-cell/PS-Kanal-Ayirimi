@@ -21,7 +21,8 @@ Bu repo, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı çalış
 4. `python3 tools/kalite_kontrol.py cikti_klasoru kaynak.png` çalıştır; uyarıları çöz ya da kullanıcıya bildir.
 5. %100 kesit + önizleme ile gözle doğrula. Kullanıcı yan yana karşılaştırma istemez; yalnızca bitmiş, doğrulanmış iş ver.
 6. Film/PSD 508 PPI. Yazdığını repoda doğrula (git/dosya), sonra "yazdım" de.
-7. Atölye yorumları karar kuralıdır: makine ~6 kafa (7–8 kurutma iptaliyle), açık zeminde fon yok, kalın yazılı desen kaba kalır.
+7. Düz (tramsız) bölge (rozet, logo, yazı) kontrolü: film rengi kaynaktan dE ≤ 12, kenar pürüzlülüğü ≤ 0,03 (`kalite_kontrol.py` ölçer); %100 kesitte yalnız yazıya değil rozete/ovale de bak.
+8. Atölye yorumları karar kuralıdır: makine ~6 kafa (7–8 kurutma iptaliyle), açık zeminde fon yok, kalın yazılı desen kaba kalır.
 
 ## İstek kapsamı
 - "Repoda güncelle / düzenle" = yalnızca kod ve doküman değişikliği + commit/push. Ayrım çalıştırma, kullanıcının bilgisayarına dosya yazma, Photoshop açma **yapılmaz**; kullanıcı ayrıca "işlem yap" demeden iş üretilmez.

@@ -85,6 +85,7 @@ navy_L = rgb2lab(np.array([[NAVY[1]]], np.uint8))[0,0]
 badge_rgb = np.median((Fc[badge_m & (lab[...,0] < 40)]*255), 0)
 badge_L = rgb2lab(badge_rgb.astype(np.uint8)[None,None,:])[0,0]
 Fc8 = (Fc*255).round().astype(np.uint8)
+Fo8 = (f32*255).round().astype(np.uint8)   # kaynagin ham rengi: kenar kusaginda color-to-alpha (bölme) gurultuyu buyutur, duz rozet maskesi bunu kullanmaz (cikinti/capak nedeni, 2026-10-14)
 navy_f = np.zeros((H,W), bool); badge_f = np.zeros((H,W), bool)
 for y0 in range(0, H, 256):
     h = min(256, H-y0)
@@ -97,7 +98,16 @@ for y0 in range(0, H, 256):
     rn = cv2.warpAffine(nav_reg.astype(np.uint8), M, (W,h), **nn) > 0
     rb = cv2.warpAffine(badge_m.astype(np.uint8), M, (W,h), **nn) > 0
     navy_f[y0:y0+h] = (cover(navy_L) >= 0.5) & rn & (al >= 0.5)
-    badge_f[y0:y0+h] = (cover(badge_L) >= 0.5) & rb
+    tl_o = rgb2lab(np.clip(cv2.warpAffine(Fo8, M, (W,h), **kw), 0, 255)).reshape(-1,3) - wL          # ham renk (alfa bolmesiz)
+    ab_b = badge_L-wL; cov_b = ((tl_o@ab_b)/float(ab_b@ab_b)).reshape(h,W)
+    badge_f[y0:y0+h] = (cov_b >= 0.5) & rb & (al >= 0.5)                                              # alfa kapisi lacivertle ayni
+# duz rozet kenarini duzelt: ince cikinti/capak (<5 px) ac, kucuk basamaklari medyanla yumusat (nokta/tram degil, duz alan)
+FLAT_R = float(os.environ.get('FLAT_R', 1.0))
+if FLAT_R > 0 and badge_f.any():
+    _r = max(1, int(round(FLAT_R*s))); _k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*_r+1, 2*_r+1))
+    _b = cv2.morphologyEx(badge_f.astype(np.uint8), cv2.MORPH_OPEN, _k)
+    badge_f = cv2.medianBlur(_b*255, 2*int(round(2.25*_r))+1) > 127
+    del _b
 log('duz kisimlar tamam')
 
 # ---------- 3) obje: palet + dagitik tram ----------
@@ -249,7 +259,23 @@ del big, img, comp, cu, au
 # ---------- 4) filmler ----------
 inks = dict(BEAR); inks[NAVY[0]] = NAVY[1]
 masks = {nm: (bear_idx == i+1) for i, nm in enumerate(bear_names)}
-masks[BADGE_INK] |= badge_f; masks[NAVY[0]] = navy_f
+masks[NAVY[0]] = navy_f
+# duz rozet rengi: palette en yakin murekkep kaynak rozet renginden cok farkliysa uyar (2026-10-14: kahve rozet siyaha gitti).
+# BADGE_INK_OWN=1: rozete kendi murekkebi (ek film/kafa) verilir; yoksa en yakin murekkebi paylasir.
+_bde = float(np.linalg.norm(rgb2lab(np.array([[inks[BADGE_INK]]], np.uint8))[0,0] - badge_L))
+UYARI = []
+if os.environ.get('BADGE_INK_OWN', '0') == '1' and _bde > 6:
+    inks['Rozet'] = tuple(int(v) for v in badge_rgb); masks['Rozet'] = badge_f
+    log('rozet kendi murekkebi (ek film): rgb', inks['Rozet'], '| en yakin palet murekkebi dE', round(_bde,1))
+else:
+    masks[BADGE_INK] |= badge_f
+    log('rozet murekkebi', BADGE_INK, 'dE (kaynak rozet rengine)', round(_bde,1))
+    if _bde > 12:
+        UYARI.append(f'rozet rengi {BADGE_INK} murekkebine atandi ama kaynak renkten dE {_bde:.0f} uzak: BADGE_INK_OWN=1 ile ayri murekkep ver ya da paleti elle duzelt')
+        log('UYARI:', UYARI[-1])
+DUZ = [{'ad': 'rozet', 'film': None, 'bbox': None, 'kaynak_rgb': [int(v) for v in badge_rgb]}] if badge_f.any() else []
+if DUZ:
+    _ys, _xs = np.where(badge_f); DUZ[0]['bbox'] = [int(_xs.min()), int(_ys.min()), int(_xs.max()-_xs.min()+1), int(_ys.max()-_ys.min()+1)]
 del bear_idx
 lum = lambda c: rgb2lab(np.array([[c]], np.uint8))[0,0,0]
 order = sorted(inks, key=lambda k: -lum(inks[k]))
@@ -258,7 +284,11 @@ sets = []
 for n_, k in enumerate(order):
     fn = f"{n_+1:02d}_{k.replace(' ','_')}.png"; save(masks[k], os.path.join(out_dir,"Acik_Tisort",fn)); sets.append([f"{n_+1:02d} {k}", fn, list(inks[k])])
     log('kaydedildi', fn, 'kapsama %', round(100*masks[k].mean(),2))
-json.dump({'W':W,'H':H,'ppi':PPI,'dot_px':DOT,'sets':{'Acik_Tisort':sets}}, open(os.path.join(out_dir,'kanallar_hibrit.json'),'w'), ensure_ascii=False, indent=1)
+_fn_of = {k: sets[i][1] for i, k in enumerate(order)}
+if DUZ: DUZ[0]['film'] = _fn_of['Rozet' if 'Rozet' in inks else BADGE_INK]
+if navy_f.any():
+    _ys, _xs = np.where(navy_f); DUZ.append({'ad': 'lacivert', 'film': _fn_of[NAVY[0]], 'bbox': [int(_xs.min()), int(_ys.min()), int(_xs.max()-_xs.min()+1), int(_ys.max()-_ys.min()+1)], 'kaynak_rgb': list(NAVY[1])})
+json.dump({'W':W,'H':H,'ppi':PPI,'dot_px':DOT,'sets':{'Acik_Tisort':sets}, 'duz_bolgeler': DUZ, 'uyarilar': UYARI}, open(os.path.join(out_dir,'kanallar_hibrit.json'),'w'), ensure_ascii=False, indent=1)
 canvas = np.zeros((H,W,3), np.uint8); canvas[:] = (250,250,250)
 for k in order: canvas[masks[k]] = inks[k]
 Image.fromarray(cv2.resize(canvas,(W//8,H//8),interpolation=cv2.INTER_AREA)).save(os.path.join(out_dir,'onizleme_acik.png'))
