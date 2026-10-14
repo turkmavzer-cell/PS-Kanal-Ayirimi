@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Genel AM tram ayrimi (acik tisort, N murekkep, tek ekran, murekkepler cakismaz).
 Kullanim: python3 tools/gorsel_am.py girdi.png maske.png cikti_klasoru [N=6]
-Env: PPI(508) LPI(45) ANG(15) DMIN(0.03) SEED(0) NSEED(4) WP_GAIN(1)
+Env: PPI(508) LPI(45) ANG(15) DMIN(0.03) MINC(0.10) SEED(0) NSEED(4) WP_GAIN(1)
 Yontem: piksel basina en iyi (murekkep a, murekkep b, kagit) karisimi (dogrusal RGB, alan orani); a ve b ayni
 yuvarlak nokta ekraninda arka arkaya dolar (koyu olan nokta cekirdegi, acik olan halka). Yani cakisma yok.
 Kagit (tisort) beyaz sayilir: kagit rengi tum goruntude beyaza normalize edilir.
@@ -66,6 +66,9 @@ def fit(inks, chunk=300):
                 xy = P@M.T; x = np.clip(xy[..., 0], 0, 1); y = np.clip(xy[..., 1], 0, 1)
                 s = x+y; ov = s > 1; x = np.where(ov, x/np.maximum(s, 1e-6), x); y = np.where(ov, y/np.maximum(s, 1e-6), y)
             E = ((x[..., None]*D[a]+y[..., None]*D[b]-P)**2).sum(-1)
+            if a != b and TQ in (a, b):          # turkuaz (zit renk) sicak murekkeple az miktarda karistirilmaz: benek yapar
+                cq = x if a == TQ else y
+                E = np.where(cq < TQMIN, 1e9, E)
             m = E < best; best[m] = E[m]; bi[m] = a; bj[m] = b; bca[m] = x[m]; bcb[m] = y[m]
         ia[r0:r0+chunk] = bi; ib[r0:r0+chunk] = bj; ca[r0:r0+chunk] = bca; cb[r0:r0+chunk] = bcb; er[r0:r0+chunk] = best
     return ia, ib, ca, cb, er
@@ -104,13 +107,17 @@ inks = inks[order]
 rgb_ink = np.clip(np.round(dlin(inks)*255), 0, 255).astype(int)
 log('murekkepler (acik->koyu):', rgb_ink.tolist())
 
+TQ = int(np.argmax(inks[:, 2]-inks[:, 0])); TQMIN = float(os.environ.get('TQMIN', 0.30)); log('turkuaz indeksi', TQ)
 ia, ib, ca, cb, er = fit(inks)
 log('katsayilar bitti')
 # koyu olan nokta cekirdegi: indeks buyuk = koyu; cekirdek = koyu
 swap = ia < ib                                               # (a acik, b koyu) -> koyu once
 c1 = np.where(swap, cb, ca); c2 = np.where(swap, ca, cb); i1 = np.where(swap, ib, ia); i2 = np.where(swap, ia, ib)
 c1[~sm] = 0; c2[~sm] = 0
-c1 = np.where(c1 < DMIN, 0, c1); c2 = np.where(c2 < DMIN, 0, c2)
+# kucuk ikincil bilesenler (ozellikle zit renkli: sicak alanda turkuaz benekleri) basilamaz/istenmez -> at.
+# en koyu murekkep ince detay icin DMIN'de kalir, digerleri MINC'e kadar atilir
+MINC = float(os.environ.get('MINC', 0.10))
+c1 = np.where(c1 < np.where(i1 == N-1, DMIN, MINC), 0, c1); c2 = np.where(c2 < np.where(i2 == N-1, DMIN, MINC), 0, c2)
 tot = c1+c2; full = tot > 1-DMIN; sc_ = np.where(full, 1/np.maximum(tot, 1e-6), 1)
 c1 = c1*sc_; c2 = c2*sc_
 del ca, cb, er, ia, ib

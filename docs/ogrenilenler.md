@@ -138,3 +138,9 @@ Kaynak: atölyeden Ömer Desinatör ve Serhat (kullanıcı aktardı, ekran gör�
 - Az renkte tasarım daha ince işlenir: pat boya kullanılır, kalıplar ince kalıba çekilir, "cam gibi" çıkar. Yazıları kabaran (kalın) desenler "kaba" kalır. Her desen tek kalıpta kurtarılmaz; kafa yetmezse renk iptal/azaltma istenir. Sonuç firmanın imalat kapasitesine bağlı.
 - Sonuç: bizim 9 film (8 ayıcık + lacivert) atölyenin 6-8 renk beklentisinin üstünde. Hedef mürekkep sayısı atölyenin kafa sayısından gelir; bunu sormadan tek doğru sayı yok.
 - [stated 2026-10-14] PSD ve film çözünürlüğü 508 PPI (atölye standardı; 45 lpi → hücre ≈11,3 px). `hibrit2.py` varsayılan PPI=508, `PPI=600` env ile eski.
+
+## Tram benekleri: zıt renk karıştırma hatası (atölye geri bildirimi, 2026-10-14)
+- Atölyeden: bej/kahve dalların içinde "ne işi var bu mavilerin" — turkuaz benekler.
+- Neden: `gorsel_am.py` her piksele en küçük hatalı (a,b) karışımı seçiyor; gri-bej tonlar için en iyi çözüm sıcak mürekkep + az turkuaz (zıt renk, doygunluk düşürür). Sayıca doğru, baskıda kirli benek.
+- Çözüm: turkuaz, sıcak mürekkeple yalnızca ≥%30 karışabilir (`TQMIN`); ayrıca en koyu hariç ikincil bileşen <%10 atılır (`MINC`). Sıcak bölgede turkuaz piksel 135 bin → 10 bin.
+- Kural: tram ayrımında mürekkepleri saf matematiksel en iyi karışıma bırakma; zıt renk (turkuaz/sıcak) karışımlarını yasakla, minimum nokta kapsamı koy.
