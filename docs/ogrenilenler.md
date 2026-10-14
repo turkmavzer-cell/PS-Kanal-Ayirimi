@@ -177,3 +177,5 @@ Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol ara
 - Basılamayacak inceliği (MINW, 3 px @508 PPI ≈ 0,15 mm) filmden sil: ince ip gibi parçalar baskıda zaten tutunmaz, ekranda çapak görünür.
 - Ten gibi yumuşak alanda piksel bazlı mürekkep çifti seçimi yama yapar; çift bölge çapında sabitlenmeli ve kaplama o çift için yeniden çözülmeli. Yumuşak alanda %100 dolu yama noktalı alanın yanına gelmemeli.
 - Çil gibi küçük ayrıntılar yumuşatmadan ve oylamadan korunmalı (yumuşatılmamış kaynak + hata artarsa geri dön).
+
+- [kullanıcı, 2026-10-14] "Repoda güncelleme yap" denince yalnızca repo değişir; ayrım çalıştırıp İndirilenler'e yazmak ve Photoshop'a geçmek istenmemişti (v9 bu yüzden istenmeden üretildi).
