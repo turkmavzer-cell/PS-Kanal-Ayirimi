@@ -122,3 +122,10 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Yeni genel araç `tools/gorsel_am.py`: kâğıt beyaza normalize; her piksele en iyi (mürekkep a, mürekkep b, kâğıt) karışımı (doğrusal RGB, alan oranı); a ve b tek yuvarlak nokta ekranında art arda dolar (koyu çekirdek, açık halka) → çakışma yok. Palet: en koyu + k-means(5), tohum seçimi ağırlıklı dE ile (3,75).
 - Sonuç mürekkepler: Bej(%0,55, kullanımı çok az), Sarı, Turkuaz, Karamel, Kahve, Koyu Kahve. Sönük bir 6. mürekkep: Bej atılıp 5 renge inilebilir.
 - Doğrulama: azaltılmış çözünürlükte karışım simülasyonu + %100 kesit (yüz/saç, elbise); PSD Photoshop 2021'de 9094 yerine 7000x10710, 508 PPI, Multichannel açıldı.
+
+## v7.1 — Kız kişisi, tüm görsel (zemin dahil), açık tişört, 6 mürekkep, AM 45 lpi/15°, 508 PPI — 2026-10-14
+- Kullanıcı seçimi (sorulunca): açık tişört, 6 mürekkep, arka plan "hepsi" (fırça darbeleri dahil, maske yok). Kâğıt tonu (231,231,226) beyaza normalize edildi; yani baskıda kâğıt dokusu mürekkep almaz.
+- `gorsel_am.py` düzeltmeleri: tam maskede beyaz noktası kenar şeridinden, renk adı otomatik (`auto_ad`), genel zıt renk kuralı, mikro parça temizliği.
+- Sonuç mürekkepler: Açık Mavi, Bej, Sarı, Turkuaz, Kahve, Koyu Kahve. `kalite_kontrol.py` temiz (zıt ton payı ≤%0,05; ≤3 px parça 0).
+- Gözle: %100 kesit (göz/yanak, sol fırça) temiz; Photoshop'ta 6 spot kanallı Multichannel, 508 PPI.
+- Bilinen: Bej (ten) kanalı yalnızca %0,65; palet seçimi düşük kullanımlı mürekkebi cezalandırmıyor — ileride düşük kullanımlı mürekkebi artık-hata pikselleriyle yeniden seç.

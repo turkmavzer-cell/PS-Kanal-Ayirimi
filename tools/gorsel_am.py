@@ -28,7 +28,9 @@ lin = lambda c: np.where(c <= 0.04045, c/12.92, ((c+0.055)/1.055)**2.4)
 dlin = lambda c: np.where(c <= 0.0031308, c*12.92, 1.055*np.clip(c, 0, None)**(1/2.4)-0.055)
 # beyaz noktasi: figur disindaki kagit
 bgpix = src[~cv2.dilate(msk.astype(np.uint8), np.ones((61, 61), np.uint8)).astype(bool)][::50].astype(np.float32)/255
-wp = np.percentile(bgpix, 60, axis=0) if len(bgpix) > 1000 else np.ones(3, np.float32)
+if len(bgpix) <= 1000:                                        # maske tum goruntuyu kapsiyor: kenar seridini kagit say
+    e = max(8, min(H, W)//50); bgpix = np.concatenate([src[:e].reshape(-1, 3), src[-e:].reshape(-1, 3), src[:, :e].reshape(-1, 3), src[:, -e:].reshape(-1, 3)])[::50].astype(np.float32)/255
+wp = np.percentile(bgpix, 60, axis=0)
 log('kagit beyaz noktasi', np.round(wp*255).astype(int))
 
 # yarim cozunurlukte coz (katsayi hesabi)
@@ -157,6 +159,20 @@ names = ['Acik_Mavi', 'Krem_Bej', 'Kahve', 'Koyu']  # yedek; gercek adlar renkte
 def nm(rgb, i):
     r, g, b = rgb
     return f'Renk{i+1}'
+
+def auto_ad(rgb, i):
+    """renkten kaba ad (Lab ton/aydinlik); ayni ad cakisirsa sira eklenir"""
+    l, a_, b_ = cv2.cvtColor(np.array([[np.array(rgb, np.float32)/255]], np.float32), cv2.COLOR_RGB2Lab)[0, 0]
+    ch = float(np.hypot(a_, b_)); hu = float(np.degrees(np.arctan2(b_, a_))) % 360
+    if ch < 7: ad = 'Acik_Gri' if l > 70 else ('Gri' if l > 35 else 'Siyah')
+    elif hu < 40: ad = 'Somon' if l > 75 else 'Kirmizi_Kahve'
+    elif hu < 80: ad = 'Bej' if (ch < 25 and l > 65) else 'Sari' if l > 68 else 'Karamel' if l > 55 else 'Kahve' if l > 30 else 'Koyu_Kahve'
+    elif hu < 150: ad = 'Yesil'
+    elif hu < 260: ad = 'Acik_Mavi' if l > 72 else 'Turkuaz' if l > 40 else 'Koyu_Mavi'
+    else: ad = 'Mor'
+    if ad in _kullanilan: ad = f'{ad}{i+1}'
+    _kullanilan.add(ad); return ad
+_kullanilan = set()
 sets = []; films = {}
 for k in range(N):
     m = idxmap == (k+1)
@@ -175,7 +191,7 @@ for k in range(N):
 # baski sirasi: acik -> koyu (altta acik)
 for n_, k in enumerate(range(N)):
     m = films[k][0]
-    nmk = NAMES[n_] if n_ < len(NAMES) else f'Murekkep{n_+1}'
+    nmk = NAMES[n_] if n_ < len(NAMES) else auto_ad(rgb_ink[k], n_)
     fn = f'{n_+1:02d}_{nmk}.png'
     Image.frombytes('1', (W, H), np.packbits(~m, axis=1).tobytes()).save(os.path.join(out_dir, 'Acik_Tisort', fn), dpi=(PPI, PPI), compress_level=6)
     sets.append([f'{n_+1:02d} {nmk}', fn, rgb_ink[k].tolist()])
