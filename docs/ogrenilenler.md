@@ -103,3 +103,6 @@ Bkz. `docs/acik-sorular.md`.
 
 - Paletin karanlık ucunda boşluk bırakma: büyük gölge alanları (çene altı, kol altı) iki koyu mürekkep arasına düşerse düz leke olur. Yeni görselde ilk işlem: en koyu iki mürekkep arası ΔE'yi ölç, gölge bandını %100'de orijinalle karşılaştır; gerekirse mürekkep sayısını artır (bu görselde 7).
 - Küçük parlama bileşenleri (<20 nokta) beyaz benek yapar; gerçek parlamalar büyüktür.
+
+- Palet seçimi tek seferlik k-means değil, "tramla-ve-puanla" olmalı: büyük koyu kütle tonu bir mürekkebe denk gelirse düz leke olur; küçük palet değişimi sonucu bölgeler arasında kaydırır. Çözüm: aday paletleri gerçekten tramlayıp bölge testiyle seç.
+- Koyu gölgeler nötr olabilir (R≈G≈B); kahve-siyah mürekkep bunlara uymaz, ayrı nötr siyah mürekkep gerekir (ayıcık kulak/karın).

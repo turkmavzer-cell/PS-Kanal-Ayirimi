@@ -9,10 +9,15 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = None
 src_path, out_dir = sys.argv[1], sys.argv[2]
 DOT = int(sys.argv[3]) if len(sys.argv) > 3 else 3
-NK = int(sys.argv[4]) if len(sys.argv) > 4 else 7
+NK = int(sys.argv[4]) if len(sys.argv) > 4 else 8
 PPI, WCM = 600, 38.5
 SPEC_L = float(os.environ.get('SPEC_L', 96.5))           # bu parlakligin ustu = mürekkep yok (parlama)
-SHARP = float(os.environ.get('SHARP', 0.5))             # yerel kontrast miktari
+SHARP = float(os.environ.get('SHARP', 0.25))             # yerel kontrast miktari
+TEX_G = float(os.environ.get('TEX_G', 3.0))              # doku esitleme en yuksek kazanc (1 = kapali)
+TEX_P = float(os.environ.get('TEX_P', 70))               # hedef detay = obje detay enerjisinin bu yuzdeligi
+DITH_N = float(os.environ.get('DITH_N', 0.0))              # tram oncesi mavi-gurultu (algi uzayinda std): duz lekeleri bozar
+BLK_C = float(os.environ.get('BLK_C', 9))                  # notr siyah icin en yuksek Lab kroma
+PAL_A = float(os.environ.get('PAL_A', 0.6))              # palet orneklemesinde ton dengeleme (0=yok, 1=tam esit)
 t0 = time.time()
 def log(*a): print(f"[{time.time()-t0:6.1f}s]", *a, flush=True)
 os.makedirs(os.path.join(out_dir, "Acik_Tisort"), exist_ok=True); os.makedirs(os.path.join(out_dir, "kesim"), exist_ok=True)
@@ -110,6 +115,17 @@ comp = cu*au + pap*(1-au)
 # yerel kontrast (tuy detayi): sadece obje icinde
 blur = cv2.GaussianBlur(comp, (0,0), 5.0)
 comp = np.clip(comp + SHARP*(comp-blur), 0, 1)*au + pap*(1-au)
+# doku esitleme: detay enerjisi dusuk bolgelerde (kulak, karin) yerel kontrast kazanci artar -> her yerde yuz kadar homojen detay
+if TEX_G > 1:
+    lum_ = comp @ np.array([0.2126,0.7152,0.0722], np.float32)
+    det_ = lum_ - cv2.GaussianBlur(lum_, (0,0), 5.0)
+    sd_ = np.sqrt(cv2.GaussianBlur(det_**2, (0,0), 20.0))
+    inobj = au[...,0] > 0.9
+    tgt_ = float(np.percentile(sd_[inobj], TEX_P))
+    gain_ = np.clip(tgt_/(sd_+1e-3), 1.0, TEX_G)[...,None]
+    bl2 = cv2.GaussianBlur(comp, (0,0), 5.0)
+    comp = np.clip(bl2 + (comp-bl2)*gain_, 0, 1)*au + pap*(1-au)
+    log('doku esitleme hedef sd', round(tgt_,4), 'ort kazanc', round(float(gain_[inobj].mean()),2))
 labc = rgb2lab(comp)
 spec = (labc[...,0] > SPEC_L) & (au[...,0] > 0.5)           # parlama: mürekkep yok
 # kucuk beyaz benekleri at (gercek parlama buyuk bilesendir): <SPEC_MIN nokta
@@ -117,30 +133,76 @@ _n, _cl, _st, _ = cv2.connectedComponentsWithStats(spec.astype(np.uint8), connec
 _keep = np.zeros(_n, bool); _keep[1:] = _st[1:,4] >= int(os.environ.get('SPEC_MIN', 20))
 spec = _keep[_cl]
 comp[spec] = pap
-# palet: obje piksellerinden k-means; en koyu merkez = gercek en koyu bolge
+# palet adaylari: tonlari dengeli ornekleyen k-means, birkac tohum/dengeleme; her adayi GERCEKTEN tramlayip puanla
 sel = (au[...,0] > 0.9) & ~spec
-px = labc[sel].astype(np.float32)
-if len(px) > 400000: px = px[np.random.RandomState(0).choice(len(px), 400000, replace=False)]
-cen = cv2.kmeans(px, NK, None, (cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER,80,0.1), 4, cv2.KMEANS_PP_CENTERS)[2]
-cen = cen[np.argsort(cen[:,0])]
-dark = px[px[:,0] <= np.percentile(px[:,0], 3)]; cen[0] = dark.mean(0)       # en koyu: gercek golge tonu
-rgbp = np.clip(cv2.cvtColor(cen.reshape(1,-1,3), cv2.COLOR_Lab2RGB).reshape(-1,3), 0, 1)
-bear_names = (["Siyah Kahve","Koyu Kahve","Kahve","Orta Kahve","Karamel","Acik Karamel","Krem","Ekstra"])[:NK]
-bear_names = bear_names if NK >= 4 else [f"Ton {i+1}" for i in range(NK)]
-BEAR = {nm: tuple(int(round(v*255)) for v in c) for nm, c in zip(bear_names, rgbp)}
-# rozet mürekkebi = palette badge rengine en yakin
-bdist = [np.linalg.norm(cen[i]-badge_L) for i in range(NK)]; BADGE_INK = bear_names[int(np.argmin(bdist))]
-log('palet', BEAR, 'rozet:', BADGE_INK)
+px_all = labc[sel].astype(np.float32)
 lin = lambda v: np.where(v <= 0.04045, v/12.92, ((v+0.055)/1.055)**2.4).astype(np.float32)
-img = np.ascontiguousarray(lin(comp))
-pal = np.ascontiguousarray(lin(np.vstack([pap[None], rgbp]).astype(np.float32)))
+bear_names = (["Siyah","Siyah Kahve","Koyu Kahve","Kahve","Orta Kahve","Karamel","Acik Karamel","Krem","Ekstra"])[:NK]
+bear_names = bear_names if NK >= 4 else [f"Ton {i+1}" for i in range(NK)]
+def make_pal(seed, pal_a, band=(10, 28)):
+    rs = np.random.RandomState(seed); bins = np.clip((px_all[:,0]/4).astype(int), 0, 24); cnt = np.bincount(bins, minlength=25).astype(np.float64)
+    w = 1.0/np.maximum(cnt[bins], 1)**pal_a; w /= w.sum()
+    px = px_all[rs.choice(len(px_all), min(len(px_all), 300000), replace=len(px_all) < 300000, p=w)]
+    cv2.setRNGSeed(seed)
+    c = cv2.kmeans(px, NK-1, None, (cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER,60,0.1), 3, cv2.KMEANS_PP_CENTERS)[2]
+    c = c[np.argsort(c[:,0])]
+    _lo, _hi = np.percentile(px_all[:,0], list(band)); c[0] = px_all[(px_all[:,0] >= _lo) & (px_all[:,0] <= _hi)].mean(0)   # koyu sicak ton (siyah kahve); en uc koyu = ayri siyah
+    # NOTR SIYAH: koyu golgeler notr (R~G~B); kahve-siyah murekkep onlara uymaz -> dusuk kromali en koyu piksellerden ayri siyah
+    ch = np.hypot(px_all[:,1], px_all[:,2]); nd = px_all[(ch < BLK_C)]
+    blk = nd[nd[:,0] <= np.percentile(nd[:,0], 8)].mean(0) if len(nd) > 500 else c[0]*0.8
+    blk[0] = min(blk[0], c[0][0]-4)
+    return np.vstack([blk[None], c])
 here = os.path.dirname(os.path.abspath(__file__)); so = os.path.join(here,'fs_dither.so')
 if not os.path.exists(so): os.system(f'gcc -O2 -shared -fPIC -o {so} {os.path.join(here,"fs_dither.c")}')
-GAM = int(os.environ.get('GAM', 1))
-lib = ctypes.CDLL(so); idx = np.zeros((dh,dw), np.uint8)
-lib.fs_dither(img.ctypes.data_as(ctypes.c_void_p), dh, dw, pal.ctypes.data_as(ctypes.c_void_p), len(pal), idx.ctypes.data_as(ctypes.c_void_p), GAM)
+GAM = int(os.environ.get('GAM', 1)); lib = ctypes.CDLL(so)
+if DITH_N > 0:
+    _nz = cv2.GaussianBlur(np.random.RandomState(1).randn(dh, dw).astype(np.float32), (0,0), 0.8); _nz /= _nz.std()
+    comp_d = np.where(au > 0.5, np.clip(np.sqrt(np.clip(comp,0,1)) + DITH_N*_nz[...,None], 0, 1)**2, comp)
+else: comp_d = comp
+img = np.ascontiguousarray(lin(comp_d))
+objm = (au[...,0] > 0.5) & ~spec
+comp_s = cv2.resize(comp, (dw//2, dh//2), interpolation=cv2.INTER_AREA); lab_s = rgb2lab(comp_s)
+FLAT_W = float(os.environ.get('FLAT_W', 0.5))
+def run_pal(cen):
+    rg = np.clip(cv2.cvtColor(cen.reshape(1,-1,3), cv2.COLOR_Lab2RGB).reshape(-1,3), 0, 1)
+    pl = np.ascontiguousarray(lin(np.vstack([pap[None], rg]).astype(np.float32)))
+    ix = np.zeros((dh,dw), np.uint8)
+    _im = img.copy(); lib.fs_dither(_im.ctypes.data_as(ctypes.c_void_p), dh, dw, pl.ctypes.data_as(ctypes.c_void_p), len(pl), ix.ctypes.data_as(ctypes.c_void_p), GAM)
+    ix[spec] = 0
+    return rg, pl, ix
+def score(rg, ix):
+    col = np.vstack([pap[None], rg]).astype(np.float32)[ix]
+    de = np.sqrt(((rgb2lab(cv2.resize(col, (dw//2, dh//2), interpolation=cv2.INTER_AREA)) - lab_s)**2).sum(2))
+    om = cv2.resize(objm.astype(np.uint8), (dw//2, dh//2), interpolation=cv2.INTER_AREA) > 0
+    ixf = ix.astype(np.int16); K = 15
+    flat = (cv2.dilate(ixf, np.ones((K,K))) == cv2.erode(ixf, np.ones((K,K)))) & objm
+    dk = objm & (labc[...,0] < 42)                                                  # koyu kutleler (kulak, karin, cene alti)
+    fl = 100*(flat & dk).sum()/max(dk.sum(),1)
+    return de[om].mean(), fl
+cands = []
+for seed in range(int(os.environ.get('PAL_N', 3))):
+    for pa in (0.0, 0.3):
+        for band in ((3, 8), (10, 28), (18, 40)):
+            c = make_pal(seed, pa, band); rg, pl, ix = run_pal(c); de, fl = score(rg, ix)
+            cands.append((de + FLAT_W*fl, de, fl, seed, (pa, band), c, rg, pl, ix))
+            log(f'  palet adayi tohum{seed} dengeleme{pa} bant{band}: dE {de:.2f} koyu-duz-leke %{fl:.1f} puan {de+FLAT_W*fl:.2f}')
+    cands = sorted(cands, key=lambda r: r[0])[:4]                                    # bellek: en iyi 4 aday kalir
+best = min(cands, key=lambda r: r[0]); _, _, _, bseed, bpa, cen, rgbp, pal, idx = best
+log('SECILEN palet: tohum', bseed, 'dengeleme/bant', bpa)
+BEAR = {nm: tuple(int(round(v*255)) for v in c) for nm, c in zip(bear_names, rgbp)}
+bdist = [np.linalg.norm(cen[i]-badge_L) for i in range(NK)]; BADGE_INK = bear_names[int(np.argmin(bdist))]
+log('palet', BEAR, 'rozet:', BADGE_INK)
 idx[spec] = 0
-log('hata yayilimi bitti', idx.shape)
+# koyu/orta bolgelerdeki izole kagit (beyaz) noktalari en yakin murekkebe cevir
+lum2 = comp @ np.array([0.2126,0.7152,0.0722], np.float32)
+bl_l = cv2.GaussianBlur(lum2, (0,0), 3.0)
+ppx = ((idx == 0) & (au[...,0] > 0.5) & ~spec).astype(np.uint8)
+nb = cv2.boxFilter(ppx.astype(np.float32), -1, (5,5), normalize=False) - ppx
+fix = (ppx > 0) & ((bl_l < 0.55) | ((nb < 3) & (bl_l < 0.85)))
+if fix.any():
+    pg = np.sqrt(pal[1:]); cg = np.sqrt(np.clip(lin(comp[fix]), 0, 1))
+    idx[fix] = 1 + np.argmin(((cg[:,None,:]-pg[None,:,:])**2).sum(2), axis=1)
+log('hata yayilimi bitti', idx.shape, 'temizlenen beyaz nokta', int(fix.sum()))
 big = np.repeat(np.repeat(idx, DOT, 0), DOT, 1)
 oy, ox = int(round(y0_*s)), int(round(x0*s)); hh, ww = min(big.shape[0], H-oy), min(big.shape[1], W-ox)
 bear_idx = np.zeros((H,W), np.uint8); bear_idx[oy:oy+hh, ox:ox+ww] = big[:hh,:ww]
@@ -173,4 +235,21 @@ Image.fromarray(cropsrc(440,700,540,780)).save(os.path.join(out_dir,'_goz.png'))
 for item in os.environ.get('CROPS','').split(';'):
     if ':' in item:
         nm, bx = item.split(':'); bx = [int(v) for v in bx.split(',')]; Image.fromarray(cropsrc(*bx)).save(os.path.join(out_dir, f'_{nm}.png'))
+# ---------- 5) bolge testi: her calismada tum bolgelerde ton hatasi + doku orani ----------
+REG = {'yuz':(460,729,550,801),'cene':(420,815,620,900),'kol':(552,895,642,967),'ayak':(273,1158,363,1230),
+       'kulak':(610,500,700,600),'karin':(500,980,600,1080)}
+for item in os.environ.get('REGIONS','').split(';'):
+    if ':' in item: nm, bx = item.split(':'); REG[nm] = tuple(int(v) for v in bx.split(','))
+log('BOLGE TESTI (dE ort / dE p95 / doku orani sonuc/kaynak; hedef: dE<8, doku 0.6-1.2)')
+for nm, (a0,b0,a1,b1) in REG.items():
+    if a1 > sw or b1 > sh: continue
+    res = cv2.resize(canvas[int(b0*s):int(b1*s), int(a0*s):int(a1*s)], (a1-a0, b1-b0), interpolation=cv2.INTER_AREA)
+    ref = src[b0:b1, a0:a1]
+    La, Lb = rgb2lab(res), rgb2lab(ref); de = np.sqrt(((La-Lb)**2).sum(2))
+    hp = lambda L: (L[...,0]-cv2.GaussianBlur(L[...,0], (0,0), 2.0)).std()
+    cr = canvas[int(b0*s):int(b1*s), int(a0*s):int(a1*s)].astype(np.int16); ob = (np.abs(cr-250).sum(2) > 12)
+    sm = cr.sum(2).astype(np.float32); K = 15
+    flat = (cv2.dilate(sm, np.ones((K,K))) - cv2.erode(sm, np.ones((K,K))) == 0) & ob
+    FL = 100*flat.sum()/max(ob.sum(),1)
+    log(f'  {nm:6s} duz-leke %{FL:4.1f}  dE {de.mean():5.1f} / {np.percentile(de,95):5.1f}   doku {hp(La)/max(hp(Lb),1e-6):.2f}')
 log('BITTI')

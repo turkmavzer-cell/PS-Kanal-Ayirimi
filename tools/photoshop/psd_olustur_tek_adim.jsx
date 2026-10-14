@@ -34,6 +34,6 @@ for (var i = 0; i < doc.channels.length && i < list.length; i++) {
   try { ch.opacity = 100; } catch (e) {}
 }
 for (var j = 0; j < doc.channels.length; j++) { try { doc.channels[j].visible = true; } catch (e) {} }
-var out = new File(root.fsName + "/Ayicik_v53_Kanallar.psd");
+var out = new File(root.fsName + "/" + root.name + "_Kanallar.psd");
 var o = new PhotoshopSaveOptions(); o.spotColors = true; o.alphaChannels = true; o.layers = false;
 doc.saveAs(out, o, true, Extension.LOWERCASE);
