@@ -103,3 +103,9 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Çözüm: (1) palet adayları (3 tohum × 2 dengeleme × 3 koyu bant) gerçekten tramlanıp puanlanır: puan = ton hatası + 0.5 × koyu kütlelerdeki düz leke %; en iyisi seçilir. (2) Her çalışmada bölge testi çıktısı (yüz, çene, kol, ayak, kulak, karın: ΔE, doku oranı, düz leke %). (3) Doku eşitleme (TEX_G): detay enerjisi düşük bölgelerde yerel kontrast kazancı. (4) Nötr siyah mürekkep: koyu gölgeler nötr; kahve-siyah ona uymuyordu. (5) Beyaz nokta: koyu/orta bölgedeki izole kağıt pikselleri en yakın mürekkebe çevrilir; küçük parlama bileşenleri (<20 nokta) iptal.
 - Yanlış gidenler (silme, not): DITH_N gürültüsü ve çok yüksek TEX_G düz lekeyi azaltmadı, ΔE'yi bozdu; mavi gürültü varsayılan kapalı. PAL_A>0 (ton dengeli örnekleme) kulakta düz leke yaptı.
 - Bir görselde sadece tek bölgeye bakarak ayar yapma: değişiklikten sonra bölge testi tablosu + en az 4 bölgenin %100 yan yana karşılaştırması şart.
+
+## v5.5 — netleştirilmiş 4096x6144 görsel (2026-10-14)
+- Girdi: kullanıcı başka uygulamayla netleştirdi (4096x6144, opak RGB, düz beyaz zemin, dizilim eski görselden farklı). Araç 1024 genişliğe göre ayarlıydı → çözünürlük çarpanı K=sw/1024 ile çekirdek boyutları, alan/mesafe eşikleri ve bölge koordinatları ölçeklendi; arka plan doldurma döngüsü vektörleştirildi (25 MP'te Python döngüsü yavaştı).
+- Yeni sorun: büyütme artefaktı ince mavi kenar halesi "lacivert" sayılıp ayı kenarlarında lacivert nokta/çizgi yaptı ve ayı kenarını yedi. Çözüm: lacivert maskesine morfolojik açma (≈0.5K px'ten ince yapılar lacivert değil).
+- Bölge testi koordinatları görsel dizilimine bağlıdır (1024 birimi, bu görsel için); yeni dizilimde REGIONS env ile verilmeli. Bölge testi içindeki değişken K, ölçek çarpanını eziyordu → KW olarak yeniden adlandırıldı.
+- Sonuç: kulak/karın/çene/yüz %100'de gözle kontrol edildi, düz leke ve beyaz nokta yok.

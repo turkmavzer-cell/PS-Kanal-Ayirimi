@@ -106,3 +106,5 @@ Bkz. `docs/acik-sorular.md`.
 
 - Palet seçimi tek seferlik k-means değil, "tramla-ve-puanla" olmalı: büyük koyu kütle tonu bir mürekkebe denk gelirse düz leke olur; küçük palet değişimi sonucu bölgeler arasında kaydırır. Çözüm: aday paletleri gerçekten tramlayıp bölge testiyle seç.
 - Koyu gölgeler nötr olabilir (R≈G≈B); kahve-siyah mürekkep bunlara uymaz, ayrı nötr siyah mürekkep gerekir (ayıcık kulak/karın).
+
+- Girdi çözünürlüğü değişince (örn. üst çözünürlüğe netleştirme) tüm piksel-birimli eşikler ölçeklenmeli; büyütme (upscale) araçları kenarda renkli hale bırakabilir — lacivert/renk maskeleri ince yapıları dışlamalı.

@@ -11,6 +11,7 @@ src_path, out_dir = sys.argv[1], sys.argv[2]
 DOT = int(sys.argv[3]) if len(sys.argv) > 3 else 3
 NK = int(sys.argv[4]) if len(sys.argv) > 4 else 8
 PPI, WCM = 600, 38.5
+K = 1.0                                                   # kaynak cozunurluk carpani (1024 genislik = 1); sw bilinince ayarlanir
 SPEC_L = float(os.environ.get('SPEC_L', 96.5))           # bu parlakligin ustu = mürekkep yok (parlama)
 SHARP = float(os.environ.get('SHARP', 0.25))             # yerel kontrast miktari
 TEX_G = float(os.environ.get('TEX_G', 3.0))              # doku esitleme en yuksek kazanc (1 = kapali)
@@ -27,7 +28,8 @@ def rgb2lab(a): return cv2.cvtColor(a.astype(np.float32)/255.0 if a.dtype==np.ui
 
 # ---------- 1) seffaf kesim ----------
 src = np.asarray(Image.open(src_path).convert('RGB')); sh, sw = src.shape[:2]
-W = int(round(WCM/2.54*PPI)); s = W/sw; H = int(round(sh*s))
+W = int(round(WCM/2.54*PPI)); s = W/sw; H = int(round(sh*s)); K = sw/1024.0
+odd = lambda v: 2*int(round(v))+1
 f32 = src.astype(np.float32)/255
 border = np.concatenate([f32[0], f32[-1], f32[:,0], f32[:,-1]]); bgc = np.median(border, 0)
 lab = rgb2lab(src); bgl = rgb2lab(np.uint8(bgc*255)[None,None,:])[0,0]
@@ -43,38 +45,33 @@ d_light = np.where(f32 > bgc, (f32-bgc)/np.maximum(1-bgc,1e-3), 0).max(2)
 a_band = np.clip(np.maximum(d_dark, d_light), 0.0, 1.0)
 alpha = np.where(bg, 0.0, np.where(band, np.maximum(a_band, 0.25), 1.0)).astype(np.float32)
 Fc = np.where(band[...,None], np.clip(bgc + (f32-bgc)/np.maximum(alpha,1e-3)[...,None], 0, 1), f32)
-# arka plan pikselleri icin en yakin on plan rengi (kübik buyutmede sizmasin)
-lbl = cv2.distanceTransformWithLabels((~fg).astype(np.uint8)^0 if False else (bg).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)[1]
-fgidx = np.flatnonzero(~bg.ravel()); Fflat = Fc.reshape(-1,3)
-Fc = Fc.copy(); Fc[bg] = Fflat[fgidx[0]]
-# basit: lbl etiketi arka plan pikseline en yakin 0 (on plan) piksel degil; once on plan koordinat tablosu
-ys0, xs0 = np.where(~bg); coordmap = np.zeros(bg.shape+(2,), np.int32)
+# arka plan pikselleri icin en yakin on plan rengi (kübik buyutmede sizmasin) - vektorlu
+ys0, xs0 = np.where(~bg)
 _, lab2 = cv2.distanceTransformWithLabels(bg.astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
-# lab2: sifir (on plan) piksellerin kendi etiketi; dolgu icin etiket->koordinat
-fg_lab = lab2[~bg]; first = {}
-for lb, y, x in zip(fg_lab.tolist(), ys0.tolist(), xs0.tolist()): first.setdefault(lb, (y,x))
-by, bx = np.where(bg); 
-for y, x in zip(by.tolist(), bx.tolist()):
-    yy, xx = first[int(lab2[y, x])]; Fc[y, x] = Fc[yy, xx]
+_ly = np.zeros(int(lab2.max())+1, np.int32); _lx = np.zeros_like(_ly)
+_ly[lab2[~bg]] = ys0; _lx[lab2[~bg]] = xs0
+Fc = Fc.copy(); Fc[bg] = Fc[_ly[lab2[bg]], _lx[lab2[bg]]]
+del lab2, _ly, _lx
 log('kesim: on plan %', round(100*fg.mean(),1), 'kusak px', int(band.sum()))
 
 # bilesenler: obje / yazi-rozet
 lab = rgb2lab((Fc*255).astype(np.uint8))
 navy = (lab[...,2] < -8) & fg
-nav_reg = cv2.dilate(navy.astype(np.uint8), np.ones((7,7),np.uint8)) > 0
-rest = cv2.morphologyEx((fg & ~nav_reg).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((3,3),np.uint8))
+navy = cv2.morphologyEx(navy.astype(np.uint8), cv2.MORPH_OPEN, np.ones((odd(0.5*K),)*2, np.uint8)) > 0   # ince mavi kenar halesi (buyutme artefakti) lacivert sayilmaz
+nav_reg = cv2.dilate(navy.astype(np.uint8), np.ones((odd(3*K),)*2,np.uint8)) > 0
+rest = cv2.morphologyEx((fg & ~nav_reg).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((odd(K),)*2,np.uint8))
 n, ccr, st, _ = cv2.connectedComponentsWithStats(rest, connectivity=8)
-order = [i for i in np.argsort(-st[1:,4])+1 if st[i,4] > 1500 and min(st[i,2], st[i,3]) > 40]
+order = [i for i in np.argsort(-st[1:,4])+1 if st[i,4] > 1500*K*K and min(st[i,2], st[i,3]) > 40*K]
 big = np.where(np.isin(ccr, order), ccr, 0).astype(np.int32)
 # kucuk parcalar (kopuk tuyler) en yakin buyuk bilesene baglanir; yakin kenarlar birlesmez
 dist_big, nearest = cv2.distanceTransformWithLabels((big == 0).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
 lab_to_comp = np.zeros(nearest.max()+1, np.int32); lab_to_comp[nearest[big > 0]] = big[big > 0]
-assign = np.where((rest > 0) & (dist_big <= 30), lab_to_comp[nearest], 0)
+assign = np.where((rest > 0) & (dist_big <= 30*K), lab_to_comp[nearest], 0)
 bear_id = order[0]; badge_ids = order[1:]
 log('bilesenler', [(int(st[i,4]), [int(v) for v in st[i,:4]]) for i in order])
 bear_core = assign == bear_id; badge_core = np.isin(assign, badge_ids)
-bear_m = (cv2.dilate(bear_core.astype(np.uint8), np.ones((5,5),np.uint8)) > 0) & ~badge_core
-badge_m = (cv2.dilate(badge_core.astype(np.uint8), np.ones((5,5),np.uint8)) > 0) & ~bear_core
+bear_m = (cv2.dilate(bear_core.astype(np.uint8), np.ones((odd(2*K),)*2,np.uint8)) > 0) & ~badge_core
+badge_m = (cv2.dilate(badge_core.astype(np.uint8), np.ones((odd(2*K),)*2,np.uint8)) > 0) & ~bear_core
 text_m = fg & ~bear_m
 def save_rgba(mask, path):
     a = (alpha*mask*255).round().astype(np.uint8)
@@ -228,6 +225,7 @@ Image.fromarray(canvas).crop((0,0,W,H)).save(os.path.join(out_dir,'_tam_onizleme
 np.save(os.path.join(out_dir,'_scale.npy'), np.array([s]))
 # yuz kirpmalari (kaynak koordinati, 600 PPI)
 def cropsrc(x0_, y0__, x1_, y1__):
+    x0_, y0__, x1_, y1__ = [int(round(v*K)) for v in (x0_, y0__, x1_, y1__)]
     return canvas[int(y0__*s):int(y1__*s), int(x0_*s):int(x1_*s)]
 import re as _re
 cx=[int(v) for v in os.environ.get('CROP','390,770,500,890').split(',')]; Image.fromarray(cropsrc(*cx)).save(os.path.join(out_dir,'_kirp.png'))
@@ -236,20 +234,21 @@ for item in os.environ.get('CROPS','').split(';'):
     if ':' in item:
         nm, bx = item.split(':'); bx = [int(v) for v in bx.split(',')]; Image.fromarray(cropsrc(*bx)).save(os.path.join(out_dir, f'_{nm}.png'))
 # ---------- 5) bolge testi: her calismada tum bolgelerde ton hatasi + doku orani ----------
-REG = {'yuz':(460,729,550,801),'cene':(420,815,620,900),'kol':(552,895,642,967),'ayak':(273,1158,363,1230),
-       'kulak':(610,500,700,600),'karin':(500,980,600,1080)}
+REG = {'yuz':(432,722,612,847),'cene':(425,837,622,902),'kol':(487,902,632,992),'ayak':(252,1137,387,1217),
+       'kulak':(622,522,722,632),'karin':(397,1020,632,1137)}   # 1024 genislik birimi; K ile olceklenir (bu gorsel dizilimi icin)
 for item in os.environ.get('REGIONS','').split(';'):
     if ':' in item: nm, bx = item.split(':'); REG[nm] = tuple(int(v) for v in bx.split(','))
 log('BOLGE TESTI (dE ort / dE p95 / doku orani sonuc/kaynak; hedef: dE<8, doku 0.6-1.2)')
 for nm, (a0,b0,a1,b1) in REG.items():
+    a0,b0,a1,b1 = [int(round(v*K)) for v in (a0,b0,a1,b1)]
     if a1 > sw or b1 > sh: continue
     res = cv2.resize(canvas[int(b0*s):int(b1*s), int(a0*s):int(a1*s)], (a1-a0, b1-b0), interpolation=cv2.INTER_AREA)
     ref = src[b0:b1, a0:a1]
     La, Lb = rgb2lab(res), rgb2lab(ref); de = np.sqrt(((La-Lb)**2).sum(2))
-    hp = lambda L: (L[...,0]-cv2.GaussianBlur(L[...,0], (0,0), 2.0)).std()
+    hp = lambda L: (L[...,0]-cv2.GaussianBlur(L[...,0], (0,0), 2.0*K)).std()
     cr = canvas[int(b0*s):int(b1*s), int(a0*s):int(a1*s)].astype(np.int16); ob = (np.abs(cr-250).sum(2) > 12)
-    sm = cr.sum(2).astype(np.float32); K = 15
-    flat = (cv2.dilate(sm, np.ones((K,K))) - cv2.erode(sm, np.ones((K,K))) == 0) & ob
+    sm = cr.sum(2).astype(np.float32); KW = 15
+    flat = (cv2.dilate(sm, np.ones((KW,KW))) - cv2.erode(sm, np.ones((KW,KW))) == 0) & ob
     FL = 100*flat.sum()/max(ob.sum(),1)
     log(f'  {nm:6s} duz-leke %{FL:4.1f}  dE {de.mean():5.1f} / {np.percentile(de,95):5.1f}   doku {hp(La)/max(hp(Lb),1e-6):.2f}')
 log('BITTI')
