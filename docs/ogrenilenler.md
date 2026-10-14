@@ -158,7 +158,7 @@ Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol ara
 | Aday paletler bozuluyordu | `fs_dither` girdiyi yerinde değiştiriyor | Her aday için `img.copy()` |
 | Bölge testi atlandı | `K` değişkeni döngüde ezildi | Yerel değişken adı farklı ve açık olsun |
 | Siyah kanal çok küçük | Koyu küçük alan k-means'te kayboluyor | Notr siyah mürekkebi en koyu piksellerden ayrı çıkar; kapsama <%0,5 ise birleştir sor |
-| Bej/kahve dalda mavi benek | Gri düşürmek için zıt renk (turkuaz) küçük miktarda karıştırıldı | Soğuk mürekkep sıcakla ≥%30 karışsın (`TQMIN`); en koyu hariç <%10 bileşen at (`MINC`) |
+| Bej/kahve dalda mavi benek | Gri düşürmek için zıt renk (turkuaz) küçük miktarda karıştırıldı | Ton açısı farkı >110° olan mürekkep çifti ≥%30 karışsın (genel kural, `TQMIN`); en koyu hariç <%10 bileşen at (`MINC`); kalite_kontrol ton uyumsuzluğunu ölçer |
 | ≤3 px mikro noktalar | Maske kenarı ve katsayı geçişi | Bağlı bileşen <`MINPX` (4 px) sil |
 | 600 PPI film üretildi | PPI sabit koddaydı | PPI 508, env ile değişir; `kalite_kontrol` PPI meta kontrol eder |
 | Yan yana karşılaştırma verildi | Kullanıcı istemedi | Yalnızca bitmiş, kendi doğruladığım iş |

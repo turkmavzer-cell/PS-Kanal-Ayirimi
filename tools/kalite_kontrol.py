@@ -2,7 +2,7 @@
 """Film ciktisi icin otomatik kalite kontrol. Karar rehberi bolum 7: docs/arastirma/gorsel-analiz-karar-rehberi.md
 Kullanim: python3 tools/kalite_kontrol.py cikti_klasoru [kaynak.png] [PPI=508]
 cikti_klasoru: Acik_Tisort/*.png (1-bit, siyah=murekkep) + kanallar_hibrit.json
-kaynak.png (istege bagli): ayni boyutta kaynak; varsa zit renk beneği (sicak bolgede soguk murekkep) olculur.
+kaynak.png (istege bagli): ayni boyutta kaynak; varsa zit renk beneği (murekkep tonu kaynak tonundan >110 derece farkli) olculur, her renk cifti icin.
 Cikis kodu 1 = uyari var. Esikler [yorum]; atolye testiyle ayarlanmali. Gozle dogrulamanin yerini TUTMAZ.
 """
 import sys, os, json
@@ -53,21 +53,25 @@ for nm, fn, rgb, a in films:
     info.append(f'  {nm:<18} bilesen {tot_n}, <= {tiny_area}px olan {tn} (%{frac*100:.1f})')
     if frac > 0.10 and tn > 2000: warn.append(f'{nm}: %{frac*100:.0f} bilesen <= {tiny_area}px (elekte tutunmayacak mikro nokta)')
 
-# zit renk beneği
+# zit renk beneği: murekkebin tonu, kaynak pikselin tonundan >110 derece farkliysa (genel kural, her renk cifti)
 if srcp:
     src = np.array(Image.open(srcp).convert('RGB'))
     if src.shape[:2] != (H, W): warn.append('kaynak boyutu film boyutuyla ayni degil, zit renk kontrolu atlandi')
     else:
-        sb = cv2.GaussianBlur(src, (0, 0), 8).astype(np.int16)
-        warm = (sb[..., 0] > sb[..., 2]+25)
-        del sb
+        f4 = 4; h4, w4 = H//f4, W//f4
+        sl = cv2.cvtColor(cv2.GaussianBlur(cv2.resize(src, (w4, h4), interpolation=cv2.INTER_AREA), (0, 0), 3).astype(np.float32)/255, cv2.COLOR_RGB2Lab)
+        sch = np.hypot(sl[..., 1], sl[..., 2]); shu = np.degrees(np.arctan2(sl[..., 2], sl[..., 1]))
+        del src
         for nm, fn, rgb, a in films:
-            r, g, b = rgb
-            if b > r+20:                                    # soguk murekkep
-                n_in = int((a & warm).sum()); n_all = max(int(a.sum()), 1)
-                frac = n_in/n_all
-                info.append(f'  {nm:<18} (soguk) sicak kaynak alaninda %{frac*100:.2f}')
-                if frac > 0.015: warn.append(f'{nm}: soguk murekkep sicak bolgede %{frac*100:.1f} (zit renk beneği: bej/kahve icinde mavi)')
+            il = cv2.cvtColor(np.array([[rgb]], np.float32)/255, cv2.COLOR_RGB2Lab)[0, 0]
+            ch = float(np.hypot(il[1], il[2])); hu = float(np.degrees(np.arctan2(il[2], il[1])))
+            if ch <= 12 or il[0] <= 30: continue                # notr/cok koyu murekkep: tonu yok
+            cov = cv2.resize(a.astype(np.float32), (w4, h4), interpolation=cv2.INTER_AREA)
+            dh = np.abs((shu-hu+180) % 360-180)
+            bad = (sch > 12) & (dh > 110)
+            frac = float((cov*bad).sum()/max(cov.sum(), 1e-6))
+            info.append(f'  {nm:<18} kaynak tonuyla uyumsuz (>110 derece) murekkep payi %{frac*100:.2f}')
+            if frac > 0.015: warn.append(f'{nm}: murekkep payinin %{frac*100:.1f}i tonu uyumsuz kaynak alanda (zit renk beneği: orn. bej/kahve icinde mavi)')
 
 print('\n'.join(info))
 print()

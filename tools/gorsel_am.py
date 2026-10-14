@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Genel AM tram ayrimi (acik tisort, N murekkep, tek ekran, murekkepler cakismaz).
 Kullanim: python3 tools/gorsel_am.py girdi.png maske.png cikti_klasoru [N=6]
-Env: PPI(508) LPI(45) ANG(15) DMIN(0.03) MINC(0.10) SEED(0) NSEED(4) WP_GAIN(1)
+Env: TQMIN(0.30) PPI(508) LPI(45) ANG(15) DMIN(0.03) MINC(0.10) SEED(0) NSEED(4) WP_GAIN(1)
 Yontem: piksel basina en iyi (murekkep a, murekkep b, kagit) karisimi (dogrusal RGB, alan orani); a ve b ayni
 yuvarlak nokta ekraninda arka arkaya dolar (koyu olan nokta cekirdegi, acik olan halka). Yani cakisma yok.
 Kagit (tisort) beyaz sayilir: kagit rengi tum goruntude beyaza normalize edilir.
@@ -66,9 +66,8 @@ def fit(inks, chunk=300):
                 xy = P@M.T; x = np.clip(xy[..., 0], 0, 1); y = np.clip(xy[..., 1], 0, 1)
                 s = x+y; ov = s > 1; x = np.where(ov, x/np.maximum(s, 1e-6), x); y = np.where(ov, y/np.maximum(s, 1e-6), y)
             E = ((x[..., None]*D[a]+y[..., None]*D[b]-P)**2).sum(-1)
-            if a != b and TQ in (a, b):          # turkuaz (zit renk) sicak murekkeple az miktarda karistirilmaz: benek yapar
-                cq = x if a == TQ else y
-                E = np.where(cq < TQMIN, 1e9, E)
+            if a != b and OPP[a, b]:             # zit renkli murekkepler (ton farki > 110 derece) az miktarda karistirilmaz: benek yapar
+                E = np.where(np.minimum(x, y) < TQMIN, 1e9, E)
             m = E < best; best[m] = E[m]; bi[m] = a; bj[m] = b; bca[m] = x[m]; bcb[m] = y[m]
         ia[r0:r0+chunk] = bi; ib[r0:r0+chunk] = bj; ca[r0:r0+chunk] = bca; cb[r0:r0+chunk] = bcb; er[r0:r0+chunk] = best
     return ia, ib, ca, cb, er
@@ -107,7 +106,14 @@ inks = inks[order]
 rgb_ink = np.clip(np.round(dlin(inks)*255), 0, 255).astype(int)
 log('murekkepler (acik->koyu):', rgb_ink.tolist())
 
-TQ = int(np.argmax(inks[:, 2]-inks[:, 0])); TQMIN = float(os.environ.get('TQMIN', 0.30)); log('turkuaz indeksi', TQ)
+TQMIN = float(os.environ.get('TQMIN', 0.30))
+_il = rgb2lab(dlin(inks)); _ch = np.hypot(_il[:, 1], _il[:, 2]); _hu = np.degrees(np.arctan2(_il[:, 2], _il[:, 1]))
+OPP = np.zeros((N, N), bool)
+for _a in range(N):
+    for _b in range(N):
+        if _a != _b and _ch[_a] > 12 and _ch[_b] > 12 and _il[_a, 0] > 30 and _il[_b, 0] > 30:   # cok koyu murekkep (ince detay) muaf
+            _dh = abs((_hu[_a]-_hu[_b]+180) % 360-180); OPP[_a, _b] = _dh > 110
+log('zit renk ciftleri (ton farki >110, ancak >=%30 karisabilir):', [(int(a), int(b)) for a in range(N) for b in range(a+1, N) if OPP[a, b]])
 ia, ib, ca, cb, er = fit(inks)
 log('katsayilar bitti')
 # koyu olan nokta cekirdegi: indeks buyuk = koyu; cekirdek = koyu

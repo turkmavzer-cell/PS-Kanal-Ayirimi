@@ -85,7 +85,7 @@ Bu projedeki karşılıkları:
 
 Bu bölüm [deney] ve [yorum]; web kaynağı bulunamadı.
 
-1. **Zıt renk karıştırma yasak.** Piksel başına "en az hata" karışımı seçilirse, gri-bej tonlar için sıcak mürekkep + az turkuaz seçilir. Matematiksel olarak doğru, baskıda kirli benek. Kural: soğuk mürekkep sıcakla ancak ≥%30'da karışır (`TQMIN`). Atölye aynı hatayı fark etti ("bej dalların içinde mavi ne işi var").
+1. **Zıt renk karıştırma yasak.** Piksel başına "en az hata" karışımı seçilirse, gri-bej tonlar için sıcak mürekkep + az turkuaz seçilir. Matematiksel olarak doğru, baskıda kirli benek. Genel kural (her renk çifti): paletteki iki mürekkebin Lab ton açısı farkı >110° ise (ikisi de kromatik, en koyu hariç) küçük olanı ≥%30 kapsamalı (`TQMIN`); yoksa bu karışım yasak. Çıktıda `kalite_kontrol.py` bunu tersten ölçer: mürekkebin tonu, kaynak pikselin tonundan >110° farklıysa uyarır (eşik %1,5). Atölye aynı hatayı fark etti ("bej dalların içinde mavi ne işi var").
 2. **Çok küçük ikincil bileşen at.** En koyu mürekkep hariç <%10 bileşen atılır (`MINC`); %2 nokta tutunmaz [kaynak: T-Biz].
 3. **Koyu ince detay (göz kırpığı, gözlük, çizgi) için ayrı en koyu mürekkep** tutulur; k-means tek başına koyu küçük alanı kaçırır [deney].
 4. **Palette orta ton merkezleri, doygun uç değil.** Açık tonlar kâğıtla karışarak elde edilir; bu yüzden palet adaylarını boyalı çıktı simülasyonuyla puanla, yalnızca renk uzayı mesafesiyle değil.
