@@ -98,3 +98,5 @@ Bkz. `docs/acik-sorular.md`.
 - 4 yerine 6 mürekkep: ayicikta ΔE ortalamasi 8,3 -> 5,5, en kotu %5 24,4 -> 12,4 (olcum, `yontem-gunlugu.md` v5).
 - Hata yayilimli tramda en yakin murekkep secimini dogrusal RGB'de yapma: koyu tonlar sikisir, orta-koyu murekkepler secilmez, yamali/parcali gorunum cikar. Secimi algisal (gama) uzayda yap, hatayi dogrusalda yay.
 - Yerel kontrast artirma (unsharp) tramlamadan once fotografik objede sicramalari buyutur; 0,5 fazla, ~0,25 dene.
+
+- Bileşen tespitinde metin kenar parçacıkları ayı sınırını şişirebilir; küçük bileşenler süzülmeli, rozet ayrı bileşen olarak tutulmalı (ayı.jfif deneyimi).

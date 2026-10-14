@@ -82,3 +82,10 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Sorunlar:
 - Karar:
 ```
+
+## v5.2 — ayı.jfif yeni varyant (2026-10-14)
+- Girdi: İndirilenler/ayı.jfif (1024x1536). Ayarlar: GAM=1, SHARP=0.25, 6 mürekkep, 3 px nokta, 600 PPI, 38,5 cm.
+- Sorun: rozet ayıyla birleşti, yazı kenar parçacıkları ayı sınırını şişirdi. Çözüm: bileşenler 3x3 close sonrası alan>1500 ve min kenar>40 ile süzüldü; küçük parçalar en yakın büyük bileşene ≤30 px mesafede atandı.
+- Yeni: CROPS env (isim:x0,y0,x1,y1;...) ile çoklu yakın plan kesimi.
+- Gözle kontrol (yüz/kol/pati): detay ve parlama korunmuş; yüzde koyu alan kenarlarında küçük beyaz benekler var (açık soru).
+- Dosyalar henüz PC'ye yazılmadı; kullanıcı onayı bekleniyor.

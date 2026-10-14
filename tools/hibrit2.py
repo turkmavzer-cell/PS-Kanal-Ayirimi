@@ -57,12 +57,19 @@ log('kesim: on plan %', round(100*fg.mean(),1), 'kusak px', int(band.sum()))
 lab = rgb2lab((Fc*255).astype(np.uint8))
 navy = (lab[...,2] < -8) & fg
 nav_reg = cv2.dilate(navy.astype(np.uint8), np.ones((7,7),np.uint8)) > 0
-rest = cv2.morphologyEx((fg & ~nav_reg).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9,9),np.uint8))
+rest = cv2.morphologyEx((fg & ~nav_reg).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((3,3),np.uint8))
 n, ccr, st, _ = cv2.connectedComponentsWithStats(rest, connectivity=8)
-order = [i for i in np.argsort(-st[1:,4])+1 if st[i,4] > 1500]
-bear_id, badge_ids = order[0], order[1:]
-bear_m = cv2.dilate((ccr==bear_id).astype(np.uint8), np.ones((5,5),np.uint8)) > 0
-badge_m = cv2.dilate(np.isin(ccr, badge_ids).astype(np.uint8), np.ones((5,5),np.uint8)) > 0
+order = [i for i in np.argsort(-st[1:,4])+1 if st[i,4] > 1500 and min(st[i,2], st[i,3]) > 40]
+big = np.where(np.isin(ccr, order), ccr, 0).astype(np.int32)
+# kucuk parcalar (kopuk tuyler) en yakin buyuk bilesene baglanir; yakin kenarlar birlesmez
+dist_big, nearest = cv2.distanceTransformWithLabels((big == 0).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+lab_to_comp = np.zeros(nearest.max()+1, np.int32); lab_to_comp[nearest[big > 0]] = big[big > 0]
+assign = np.where((rest > 0) & (dist_big <= 30), lab_to_comp[nearest], 0)
+bear_id = order[0]; badge_ids = order[1:]
+log('bilesenler', [(int(st[i,4]), [int(v) for v in st[i,:4]]) for i in order])
+bear_core = assign == bear_id; badge_core = np.isin(assign, badge_ids)
+bear_m = (cv2.dilate(bear_core.astype(np.uint8), np.ones((5,5),np.uint8)) > 0) & ~badge_core
+badge_m = (cv2.dilate(badge_core.astype(np.uint8), np.ones((5,5),np.uint8)) > 0) & ~bear_core
 text_m = fg & ~bear_m
 def save_rgba(mask, path):
     a = (alpha*mask*255).round().astype(np.uint8)
@@ -159,4 +166,7 @@ def cropsrc(x0_, y0__, x1_, y1__):
 import re as _re
 cx=[int(v) for v in os.environ.get('CROP','390,770,500,890').split(',')]; Image.fromarray(cropsrc(*cx)).save(os.path.join(out_dir,'_kirp.png'))
 Image.fromarray(cropsrc(440,700,540,780)).save(os.path.join(out_dir,'_goz.png')); Image.fromarray(cropsrc(480,820,600,900)).save(os.path.join(out_dir,'_cene.png'))
+for item in os.environ.get('CROPS','').split(';'):
+    if ':' in item:
+        nm, bx = item.split(':'); bx = [int(v) for v in bx.split(',')]; Image.fromarray(cropsrc(*bx)).save(os.path.join(out_dir, f'_{nm}.png'))
 log('BITTI')
