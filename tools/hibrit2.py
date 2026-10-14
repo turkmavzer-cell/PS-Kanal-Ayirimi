@@ -9,7 +9,7 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = None
 src_path, out_dir = sys.argv[1], sys.argv[2]
 DOT = int(sys.argv[3]) if len(sys.argv) > 3 else 3
-NK = int(sys.argv[4]) if len(sys.argv) > 4 else 6
+NK = int(sys.argv[4]) if len(sys.argv) > 4 else 7
 PPI, WCM = 600, 38.5
 SPEC_L = float(os.environ.get('SPEC_L', 96.5))           # bu parlakligin ustu = mürekkep yok (parlama)
 SHARP = float(os.environ.get('SHARP', 0.5))             # yerel kontrast miktari
@@ -112,6 +112,10 @@ blur = cv2.GaussianBlur(comp, (0,0), 5.0)
 comp = np.clip(comp + SHARP*(comp-blur), 0, 1)*au + pap*(1-au)
 labc = rgb2lab(comp)
 spec = (labc[...,0] > SPEC_L) & (au[...,0] > 0.5)           # parlama: mürekkep yok
+# kucuk beyaz benekleri at (gercek parlama buyuk bilesendir): <SPEC_MIN nokta
+_n, _cl, _st, _ = cv2.connectedComponentsWithStats(spec.astype(np.uint8), connectivity=8)
+_keep = np.zeros(_n, bool); _keep[1:] = _st[1:,4] >= int(os.environ.get('SPEC_MIN', 20))
+spec = _keep[_cl]
 comp[spec] = pap
 # palet: obje piksellerinden k-means; en koyu merkez = gercek en koyu bolge
 sel = (au[...,0] > 0.9) & ~spec
@@ -121,7 +125,7 @@ cen = cv2.kmeans(px, NK, None, (cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER
 cen = cen[np.argsort(cen[:,0])]
 dark = px[px[:,0] <= np.percentile(px[:,0], 3)]; cen[0] = dark.mean(0)       # en koyu: gercek golge tonu
 rgbp = np.clip(cv2.cvtColor(cen.reshape(1,-1,3), cv2.COLOR_Lab2RGB).reshape(-1,3), 0, 1)
-bear_names = (["Siyah Kahve","Koyu Kahve","Kahve","Karamel","Acik Karamel","Krem","Acik Krem","Ekstra"])[:NK]
+bear_names = (["Siyah Kahve","Koyu Kahve","Kahve","Orta Kahve","Karamel","Acik Karamel","Krem","Ekstra"])[:NK]
 bear_names = bear_names if NK >= 4 else [f"Ton {i+1}" for i in range(NK)]
 BEAR = {nm: tuple(int(round(v*255)) for v in c) for nm, c in zip(bear_names, rgbp)}
 # rozet mürekkebi = palette badge rengine en yakin

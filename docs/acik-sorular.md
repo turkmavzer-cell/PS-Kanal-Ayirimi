@@ -38,3 +38,5 @@
 - [ ] Mandala v4: lacivert cizgi kanali, krem/sari kontur, potrace tabanli arac `tools/` altina alinacak.
 - [ ] Ayicik: `GAM=1 SHARP=0.25` ile tum gorseli yeniden ayir, cene/göz/yanak kontrol et, filmleri ve PSD'yi guncelle.
 - [ ] Koyu bolgelerdeki dagnik tek beyaz noktalar (parlama maskesi kalintisi) temizlensin.
+
+- [x] Koyu alanlardaki beyaz benekler SPEC_MIN ile temizlendi (v5.3).

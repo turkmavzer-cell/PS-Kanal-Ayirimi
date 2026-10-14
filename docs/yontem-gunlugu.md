@@ -89,3 +89,9 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Yeni: CROPS env (isim:x0,y0,x1,y1;...) ile çoklu yakın plan kesimi.
 - Gözle kontrol (yüz/kol/pati): detay ve parlama korunmuş; yüzde koyu alan kenarlarında küçük beyaz benekler var (açık soru).
 - Dosyalar henüz PC'ye yazılmadı; kullanıcı onayı bekleniyor.
+
+## v5.3 — çene altı kaybı + beyaz benekler (2026-10-14)
+- Kullanıcı önizlemede çene altı gölgesinin kaybolduğunu gördü. Teşhis: 6 mürekkepte gölge tonu "Siyah Kahve" (≈32,24,20) ile "Koyu Kahve" (≈92,60,38) arasında kalıyor; arası açık olduğu için gölge düz Koyu Kahve lekesine dönüşüyor, ağız çizgisi silikleşiyor.
+- Düzeltme: ayı mürekkep sayısı varsayılanı 6 → 7 (lacivertle 8 film). Gölge bandı, ağız çizgisi ve tüy dokusu geri geldi (gözle doğrulandı).
+- Beyaz benekler: parlama maskesi (L>SPEC_L) 20 noktadan (SPEC_MIN) küçük bileşenlerde iptal edildi; yüzdeki beyaz beneklar gitti.
+- Palet isimleri 7 ton için güncellendi (Orta Kahve eklendi).

@@ -100,3 +100,6 @@ Bkz. `docs/acik-sorular.md`.
 - Yerel kontrast artirma (unsharp) tramlamadan once fotografik objede sicramalari buyutur; 0,5 fazla, ~0,25 dene.
 
 - Bileşen tespitinde metin kenar parçacıkları ayı sınırını şişirebilir; küçük bileşenler süzülmeli, rozet ayrı bileşen olarak tutulmalı (ayı.jfif deneyimi).
+
+- Paletin karanlık ucunda boşluk bırakma: büyük gölge alanları (çene altı, kol altı) iki koyu mürekkep arasına düşerse düz leke olur. Yeni görselde ilk işlem: en koyu iki mürekkep arası ΔE'yi ölç, gölge bandını %100'de orijinalle karşılaştır; gerekirse mürekkep sayısını artır (bu görselde 7).
+- Küçük parlama bileşenleri (<20 nokta) beyaz benek yapar; gerçek parlamalar büyüktür.
