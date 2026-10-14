@@ -95,3 +95,4 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Düzeltme: ayı mürekkep sayısı varsayılanı 6 → 7 (lacivertle 8 film). Gölge bandı, ağız çizgisi ve tüy dokusu geri geldi (gözle doğrulandı).
 - Beyaz benekler: parlama maskesi (L>SPEC_L) 20 noktadan (SPEC_MIN) küçük bileşenlerde iptal edildi; yüzdeki beyaz beneklar gitti.
 - Palet isimleri 7 ton için güncellendi (Orta Kahve eklendi).
+- v5.3 teslim: İndirilenler\Emprime_Ayicik_v53 (8 film 600 PPI, Kesim, önizleme, kanallar_hibrit.json). PSD tek betikle (tools/photoshop/psd_olustur_tek_adim.jsx: kanal birleştirme + spot renk + kaydet) Photoshop 2021'de üretildi, 8 spot kanal doğrulandı, saveAs copy=true olduğu için açık belge adı 01_Krem.png kalır; kaydedilen PSD ayrıca açıldı.
