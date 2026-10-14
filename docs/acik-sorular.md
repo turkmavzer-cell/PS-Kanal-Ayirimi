@@ -41,4 +41,4 @@
 
 - [x] Koyu alanlardaki beyaz benekler SPEC_MIN ile temizlendi (v5.3).
 - [ ] Atölye (WhatsApp grubu) görüşü bekleniyor: 3 px (0,127 mm) nokta baskıda tutar mı; siyah kanal (%0,17) ayrı film olarak mantıklı mı; elek/mürekkep/film türü.
-- [ ] Ayıcık için atölye yöntemine yakın AM tram denemesi: 45 lpi @ 508–600 PPI, yuvarlak nokta, mürekkep başına ayrı açı (veya tek mürekkep/ton yığılması), fon/altlık + çevresinde boşluk.
+- [x] Ayıcık AM tram denemesi yapıldı (45 lpi, 15°, yuvarlak nokta, tek açı, 9 film; hibrit2.py AM=1). Açık: mürekkep başına ayrı açı/moiré, 45 lpi yeterli mi, siyah kanal çok küçük — atölye görüşü bekleniyor.
