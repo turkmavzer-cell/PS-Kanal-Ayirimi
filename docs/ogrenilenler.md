@@ -110,3 +110,12 @@ Bkz. `docs/acik-sorular.md`.
 - Girdi çözünürlüğü değişince (örn. üst çözünürlüğe netleştirme) tüm piksel-birimli eşikler ölçeklenmeli; büyütme (upscale) araçları kenarda renkli hale bırakabilir — lacivert/renk maskeleri ince yapıları dışlamalı.
 
 - Kaynak görsel kalitesi sonucu en çok etkileyen girdidir: 1024 px genişlikteki bulanık görselde tüy detayı yoktu; üst çözünürlüğe netleştirilmiş 4096x6144 sürüm belirgin daha iyi sonuç verdi (kullanıcı geri bildirimi, 2026-10-14). Düşük çözünürlüklü girdide önce netleştirme önerilir.
+
+## Atölye yöntemi: "651 deneme cihan.psd" analizi (2026-10-14, kullanıcı: "bu işi yapanlar bu şekilde yapıyor")
+Tasarım: "Everything in life is art" (kaligrafi yazı + oymalı barok panel), ayıcık değil. Kaynak: PSD bilgisayarda (300 MB, bulut aktarımı zaman aşımı) → psd-tools ile yerinde incelendi.
+- Belge: CMYK, 8 bit, 7680x9945 px, çözünürlük 508 PPI (≈38,4 cm), 7 spot kanal + saydamlık. Katmanlar: Layer 6 (görünür, ana sanat), Layer 4 (gizli).
+- Kanal sırası: fon, gri, siyah, tram(boş), fon?, gri, siyah, siyah 2. Son 4 kanal bitmap (yalnız 0/255): **fon** (%59, düz), **gri** (%27, tramlı), **siyah** (%20,7, tramlı), **siyah 2** (%3,7, düz yazı çizgileri). İlk set (gri, siyah) sürekli tonlu ara kanallar (184/204 gri seviye), sonra tramlanmış.
+- Tram: yuvarlak nokta (AM), ~45 lpi, 15° açı, nokta periyodu ≈11,35 px (508/45) → muhtemelen Photoshop Bitmap > Halftone Screen (çıkış 508 ppi, 45 lpi, 15°, round). gri ve siyah kanallar AYNI açı/sıklıkta.
+- Yapı: gri ve siyah tramlar üst üste (siyahın %19,5'i grinin içinde; gri/siyah neredeyse hiç fon dışına taşmıyor) → ton arttıkça ikinci mürekkep eklenen "yığılmış ton" şeması. fon = tüm panel altında düz taban (koyu tişört altlığı gibi), yazı çevresinde ince (≈birkaç px) boşluk bırakılmış; yazı (siyah 2) fon/tramlarla neredeyse hiç çakışmıyor (%0,1–0,9).
+- Çıkarım: gerçek atölye tramı kaba (45 lpi ≈ 0,56 mm hücre), benim FM 3 px (0,127 mm) noktamdan çok daha iri. FM 3 px baskıda tutmama riski yüksek; AM 45 lpi / 15° atölyenin kanıtlı değeri. Renkli ayıcık için çok mürekkepli AM tram (açılar arası ayrım) denenmeli.
+- Kaynak belirsizliği: lpi/açı/şekil FFT ölçümü ve görsel inceleme; PSD'de halftone ayarı kaydı bulunmadı (resource boş), bu yüzden "muhtemelen" Photoshop bitmap halftone.
