@@ -4,6 +4,9 @@ Bu rapor emprime/serigrafi tişört baskısında renk ayrımının nasıl yapıl
 
 İşaretler: Her iddianın yanında kaynağı link olarak verildi. **[yorum]** benim çıkarımım demektir; kaynakta doğrudan yazmaz ama kaynaklı bilgilerden türetilmiştir. **[kaynaksız]** yaygın pratik olduğunu düşündüğüm ama bu araştırmada belgeleyemediğim bilgidir. **[belirsiz]** kaynakların çeliştiği ya da doğrulayamadığım noktadır. Wilflex ve Union Ink için renk ayrımına özel bir teknik doküman bulamadım; bu iki marka yalnızca mürekkep ve elek aralığı bağlamında geçiyor.
 
+
+> **Güncelleme notu (2026-10-14):** Bu rapor erken dönemde yazıldı. Sonradan değişenler: (1) Proje çözünürlüğü **508 PPI** (kullanıcı ve atölye dosyaları); aşağıdaki "600 PPI" ifadeleri kaynak önerisi ya da eski varsayımdır. (2) Atölye dosyaları 45 lpi AM tram kullanıyor (651: 15°, spot yığılma; Casa Blanca: CMY+K, hepsi 45°); kaynaklar 45°'den kaçınmayı önerse de atölye 45° kullanmış, bu çelişki atölyeye sorulacak. (3) Atölye 6–8 renk (makine kafası) sınırı, açık zeminde fon yapılmayacağını söyledi. (4) Karar ölçütleri ve kontrol listesi için bkz. `gorsel-analiz-karar-rehberi.md`.
+
 ---
 
 ## 10 Maddelik Özet
@@ -196,7 +199,7 @@ Kenar yumuşatma, ekranda tırtığı gizlemek için iki renk arasına ara renkl
 ### Photoshop iş akışı
 
 1. Dosyayı RGB'de, baskı boyutunda açın. Arka planı şeffaf tutun; otomatik ayrım programları da bunu ister ([Screen Printing Mag](https://screenprintingmag.com/screen-printing-color-separations-photoshop-illustrator-and-corel-tips-for-sharper-results/)).
-2. Gerekirse 600 PPI'ya yeniden örnekleyin [yorum]. JPEG gürültüsünü temizleyin.
+2. Gerekirse **508 PPI**'ya (proje standardı) yeniden örnekleyin [yorum]. JPEG gürültüsünü temizleyin.
 3. Renk indirgeyin: Indexed Color (Custom palet, sadece gerçek mürekkepler, Dither: None [kaynaksız]) ya da her renk için Color Range (düşük fuzziness).
 4. Her seçimi **Save Selection** ile kanala alın, ardından **New Spot Channel**'a çevirin. Kanalları doğru adlandırın, yoksa diğer uygulamalar tanımayabilir. PSD ya da TIFF kaydedin ([Adobe Photoshop](https://helpx.adobe.com/photoshop/using/printing-spot-colors.html)). Kanalların üst üste basılma sırası Channels panelindeki sırayla belirlenir; varsayılan kanalların üstüne spot taşımak yalnızca Multichannel modunda mümkündür ([Adobe](https://helpx.adobe.com/photoshop/using/printing-spot-colors.html)).
 5. Her kanala **Image > Adjustments > Threshold (128)** uygulayıp gri pikselleri yok edin ([Reddit](https://www.reddit.com/r/SCREENPRINTING/comments/137llpg/does_a_design_need_to_be_bitmapped_vectored_or/)'teki %50 threshold mantığı).
@@ -263,7 +266,7 @@ Hesap: 1 punto = 1/72 inç ≈ 4,2 px (300 PPI) ≈ 7 px (508 PPI) ≈ 8,3 px (6
 | Görsel türü | Önerilen yöntem | Önerilen renk sayısı | Dikkat edilecek hata |
 |---|---|---|---|
 | Logo / tipografi / vektör düz renk | Tramsız spot; vektör | Gerçek mürekkep sayısı (genelde 1–4); koyu tişörtte +1 underbase | Anti-aliasing; trap eksikliği; ince yazının elek için fazla ince kalması |
-| Mandala / süslemeli düz renk (sizin durumunuz) | Tramsız spot; 600 PPI raster ya da vektör; sık elek (TR'de 77T–90T civarı) | 4–5 mürekkep ve underbase; haleler sayılmaz | Tram ince çizgiyi kesik noktalara böler [yorum]; choke ince çizgiyi yok eder; aşırı pozlama ([OkanGökhan](https://www.okangokhan.com/serigrafi-baski-kalibi-yapisi-bilesenleri/)) |
+| Mandala / süslemeli düz renk (sizin durumunuz) | Tramsız spot; 508 PPI raster (proje standardı) ya da vektör; sık elek (TR'de 77T–90T civarı) | 4–5 mürekkep ve underbase; haleler sayılmaz | Tram ince çizgiyi kesik noktalara böler [yorum]; choke ince çizgiyi yok eder; aşırı pozlama ([OkanGökhan](https://www.okangokhan.com/serigrafi-baski-kalibi-yapisi-bilesenleri/)) |
 | Gölge/degrade içeren çizim | Karma: düz alanlar ve sadece geçişlerde 35–45 lpi tram ([T-Biz](https://t-biznetwork.com/articles/screenprinting/halftone-dots-made-easy/)) | 3–6 | %5'in altı düşer, %86–90'ın üstü dolar ([Saati](https://www.catspitproductionsllc.com/Documents/SaatiPrint%20TechTip%20Handbook.pdf)); moiré |
 | Fotoğraf, açık tişört | CMYK ya da simüle proses, 55–65 lpi | 4 (+spot) | Moiré, dot gain, kayıt |
 | Fotoğraf, koyu tişört | Simüle proses ya da index; tramlı underbase ve highlight beyazı | Simüle 4–8; index 6–10 ([ScreenPrintingNow](https://www.screenprintingnow.com/techniques/how-to-make-index-color-separations-for-screen-printing/)) | Underbase çok opak/kalın; 230/305 elek uyumu ([Fresener](https://t-biznetwork.com/blogs/scottfresener/secrets-to-high-end-printing-on-dark-shirts-by-scott-fresener/)) |

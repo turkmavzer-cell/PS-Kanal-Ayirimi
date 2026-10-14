@@ -43,3 +43,6 @@
 - [ ] Atölye (WhatsApp grubu) görüşü bekleniyor: 3 px (0,127 mm) nokta baskıda tutar mı; siyah kanal (%0,17) ayrı film olarak mantıklı mı; elek/mürekkep/film türü.
 - [x] Ayıcık AM tram denemesi yapıldı (45 lpi, 15°, yuvarlak nokta, tek açı, 9 film; hibrit2.py AM=1). Açık: mürekkep başına ayrı açı/moiré, 45 lpi yeterli mi, siyah kanal çok küçük — atölye görüşü bekleniyor.
 - [ ] Atölyenin makine kafa sayısı (6? 8?) ve kurutma durumu → hedef mürekkep sayısı; ayıcık için 6/7/8 renkli azaltılmış set (siyah, 3 kahve, lacivert, +beyaz/fon). Beyaz tişörtte fon yok, Be Gentle içi kâğıt rengi; koyu tişörtte beyaz mürekkep gerekir.
+- [ ] Atölyeye sor (karar rehberi bölüm 8): açı (15°/25°/45°), elek sayısı, nokta büyümesi kompanzasyonu, en küçük basılabilir nokta/detay, kafa sayısı, siyah gibi küçük kanalın birleştirilmesi, spot yığılma mı CMY+K mı.
+- [ ] Kız kişisi: PSD'yi yeniden oluştur (düzeltilmiş filmler `Emprime_Kiz_AM_508`'de; Photoshop'ta bilgisayar erişimi gerekir). Bej kanal %0,21 → atılıp 5 renge inilebilir.
+- [ ] analiz.py/kalite_kontrol.py eşikleri atölye geri bildirimiyle ayarla; hale (upscaler) ölçümü henüz yok.

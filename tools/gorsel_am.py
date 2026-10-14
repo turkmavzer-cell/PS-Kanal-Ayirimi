@@ -156,6 +156,16 @@ for k in range(N):
     m = idxmap == (k+1)
     lab = rgb2lab(np.array([[rgb_ink[k]/255.0]], np.float32).reshape(1, 3))[0]
     films[k] = (m, lab)
+# elekte tutunmayacak mikro parcalari (<= MINPX px) temizle: maske kenari ve nokta kesisiminde olusur
+MINPX = int(os.environ.get('MINPX', 4))
+for k in range(N):
+    m = films[k][0]
+    nl, lb, st, _ = cv2.connectedComponentsWithStats(m.astype(np.uint8), connectivity=8)
+    small = np.zeros(nl, bool); small[1:] = st[1:, 4] < MINPX
+    nrem = int(small[1:].sum())
+    if nrem: m[small[lb]] = False
+    log(f'mikro parca temizligi film {k+1}: {nrem} parca silindi')
+    del lb
 # baski sirasi: acik -> koyu (altta acik)
 for n_, k in enumerate(range(N)):
     m = films[k][0]
@@ -167,6 +177,6 @@ for n_, k in enumerate(range(N)):
 json.dump({'W': W, 'H': H, 'ppi': PPI, 'dot_px': 0, 'sets': {'Acik_Tisort': sets}}, open(os.path.join(out_dir, 'kanallar_hibrit.json'), 'w'), ensure_ascii=False, indent=1)
 # onizleme: dogrusal karisim degil, murekkep ustte boyanmis (cakisma yok) beyaz kagit
 prev = np.full((H, W, 3), 255, np.uint8)
-for k in range(N): prev[idxmap == k+1] = rgb_ink[k]
+for k in range(N): prev[films[k][0]] = rgb_ink[k]
 Image.fromarray(prev).save(os.path.join(out_dir, 'onizleme_acik.png'), dpi=(PPI, PPI))
 log('bitti')

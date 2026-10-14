@@ -16,7 +16,7 @@ Bu dosya projenin **ana bilgi tabanıdır**. Yeni bir şey öğrenildikçe (doğ
 | Görsel türü | Yöntem | Not |
 |---|---|---|
 | Düz renkli illüstrasyon, logo, tipografi | **Tramsız spot** | Bu projenin hedef iş türü |
-| Süslemeli, çok detaylı düz renkli çizim | Tramsız spot, sık elek, 600 PPI | İnce çizgi (≈0,3 mm altı) baskıya uygun değil |
+| Süslemeli, çok detaylı düz renkli çizim | Tramsız spot, sık elek, 508 PPI | İnce çizgi (≈0,3 mm altı) baskıya uygun değil |
 | Degrade/gölgeli çizim | Karma: düz alanlar + yalnızca geçişlerde 35–45 lpi tram | |
 | Fotoğraf, açık tişört | CMYK ya da simüle proses, 55–65 lpi | |
 | Fotoğraf, koyu tişört | Simüle proses ya da index, tramlı underbase | |
@@ -49,7 +49,7 @@ Kenardaki karışık piksel yanlışlıkla bir üçüncü renge (ör. Mavi 2) at
 
 ## 3. Doğru çıkan yöntem (v3, `tools/tramsiz.py`)
 
-1. Baskı ölçüsünde **600 PPI** (38,5 cm genişlik → 9094 px). [rapor: küçük yazı için 600 dpi]
+1. Baskı ölçüsünde **508 PPI** (kullanıcı talimatı; eskiden 600 → 9094 px @38,5 cm; 508'de 7701 px). [atölye dosyaları 508]
 2. Gerçek mürekkep paleti (kenar ara tonları elenmiş), beyaz = kâğıt/tişört. Açıktan koyuya sıralı = baskı sırası.
 3. Kaynak bikübik büyütülür; her piksel iki renk karışım modeliyle **sert** sınıflandırılır (yumuşak geçiş yok).
 4. Medyan filtre (5 px) ve ince parça temizliği (< 7 px, en koyu mürekkep hariç).
@@ -144,3 +144,24 @@ Kaynak: atölyeden Ömer Desinatör ve Serhat (kullanıcı aktardı, ekran gör�
 - Neden: `gorsel_am.py` her piksele en küçük hatalı (a,b) karışımı seçiyor; gri-bej tonlar için en iyi çözüm sıcak mürekkep + az turkuaz (zıt renk, doygunluk düşürür). Sayıca doğru, baskıda kirli benek.
 - Çözüm: turkuaz, sıcak mürekkeple yalnızca ≥%30 karışabilir (`TQMIN`); ayrıca en koyu hariç ikincil bileşen <%10 atılır (`MINC`). Sıcak bölgede turkuaz piksel 135 bin → 10 bin.
 - Kural: tram ayrımında mürekkepleri saf matematiksel en iyi karışıma bırakma; zıt renk (turkuaz/sıcak) karışımlarını yasakla, minimum nokta kapsamı koy.
+
+
+## Hata → neden → kural tablosu (2026-10-13/14 oturumları)
+Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol araçları: `tools/analiz.py` (önce), `tools/kalite_kontrol.py` (sonra).
+
+| Hata | Neden | Kural |
+|---|---|---|
+| Çene altı/kulak/karın düz leke | Tek k-means paleti; geniş koyu kütle bir mürekkeple çakışıyor | Aday paletleri dither edip puanla (dE + koyu-düz-leke %); doku eşitle |
+| Beyaz noktalar koyu alanda | Kâğıt rengi "mürekkep yok" pikselleri | İzole kâğıt noktalarını en yakın mürekkebe çevir |
+| Hata başka yerde ortaya çıkıyor | Tek bölgeye göre ayar | Her çalıştırmada bölge test tablosu (yüz/çene/kol/ayak/kulak/karın) |
+| Lacivert sanılan hale | Upscaler mavi halka | Lacivert maskeyi morfolojik aç, `K=sw/1024` ölçekle |
+| Aday paletler bozuluyordu | `fs_dither` girdiyi yerinde değiştiriyor | Her aday için `img.copy()` |
+| Bölge testi atlandı | `K` değişkeni döngüde ezildi | Yerel değişken adı farklı ve açık olsun |
+| Siyah kanal çok küçük | Koyu küçük alan k-means'te kayboluyor | Notr siyah mürekkebi en koyu piksellerden ayrı çıkar; kapsama <%0,5 ise birleştir sor |
+| Bej/kahve dalda mavi benek | Gri düşürmek için zıt renk (turkuaz) küçük miktarda karıştırıldı | Soğuk mürekkep sıcakla ≥%30 karışsın (`TQMIN`); en koyu hariç <%10 bileşen at (`MINC`) |
+| ≤3 px mikro noktalar | Maske kenarı ve katsayı geçişi | Bağlı bileşen <`MINPX` (4 px) sil |
+| 600 PPI film üretildi | PPI sabit koddaydı | PPI 508, env ile değişir; `kalite_kontrol` PPI meta kontrol eder |
+| Yan yana karşılaştırma verildi | Kullanıcı istemedi | Yalnızca bitmiş, kendi doğruladığım iş |
+| Tişört rengi/renk sayısı tahmin edildi | Soru sorulmadı | İş istenince tişört rengi, renk sayısı ve zemini **sor** |
+| Atölye kapasitesini aşan renk (9 film) | Kafa sayısı bilinmiyordu | Hedef renk sayısını kullanıcı/atölye söyler |
+| Aşırı iddia (repoda yazılı demek) | Doğrulanmadı | Yazdığımı `git`/dosyadan doğrula, sonra söyle |
