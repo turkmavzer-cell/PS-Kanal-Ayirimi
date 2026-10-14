@@ -13,7 +13,7 @@ Image.MAX_IMAGE_PIXELS = None
 d = sys.argv[1]; srcp = sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].isdigit() else None
 PPI_EXP = int(os.environ.get('PPI', 508))
 J = json.load(open(os.path.join(d, 'kanallar_hibrit.json')))
-setn = list(J['sets'])[0]; sets = J['sets'][setn]
+SETN = os.environ.get('SET') or list(J['sets'])[0]; setn = SETN; sets = J['sets'][setn]
 warn = []; info = []
 films = []
 for nm, fn, rgb in sets:
@@ -33,12 +33,13 @@ tot = H*W
 for nm, fn, rgb, a in films:
     c = a.sum()/tot*100
     info.append(f'  {nm:<18} kapsama %{c:.2f}')
-    if c < 0.5: warn.append(f'{nm}: kapsama %{c:.2f} <0,5 — neredeyse kullanilmayan murekkep (birlestir ya da atilacak kafa)')
+    if c < 0.5 and 'Fon' not in nm: warn.append(f'{nm}: kapsama %{c:.2f} <0,5 — neredeyse kullanilmayan murekkep (birlestir ya da atilacak kafa)')
 
 # cakisma (indeks ayriminda 0 olmali)
 for i in range(len(films)):
     for j in range(i+1, len(films)):
         ov = (films[i][3] & films[j][3]).sum()
+        if 'Fon' in films[i][0] or 'Fon' in films[j][0]: continue   # fon (altlik) renklerin altinda olmali
         if ov > 0.001*min(films[i][3].sum(), films[j][3].sum()):
             warn.append(f'{films[i][0]} ile {films[j][0]} cakisiyor: {ov} px')
 
@@ -65,13 +66,15 @@ if srcp:
         for nm, fn, rgb, a in films:
             il = cv2.cvtColor(np.array([[rgb]], np.float32)/255, cv2.COLOR_RGB2Lab)[0, 0]
             ch = float(np.hypot(il[1], il[2])); hu = float(np.degrees(np.arctan2(il[2], il[1])))
-            if ch <= 12 or il[0] <= 30: continue                # notr/cok koyu murekkep: tonu yok
+            if ch <= 5: continue                                # notr murekkep: tonu yok (soluk renkler DAHIL)
             cov = cv2.resize(a.astype(np.float32), (w4, h4), interpolation=cv2.INTER_AREA)
             dh = np.abs((shu-hu+180) % 360-180)
-            bad = (sch > 12) & (dh > 110)
+            bad = (sch > 8) & (dh > 90)
+            if il[0] < 35: bad &= (sl[..., 0] > 55)             # en koyu: cizgide degil, acik/orta alanda ton koyulastirma
             frac = float((cov*bad).sum()/max(cov.sum(), 1e-6))
-            info.append(f'  {nm:<18} kaynak tonuyla uyumsuz (>110 derece) murekkep payi %{frac*100:.2f}')
-            if frac > 0.015: warn.append(f'{nm}: murekkep payinin %{frac*100:.1f}i tonu uyumsuz kaynak alanda (zit renk beneği: orn. bej/kahve icinde mavi)')
+            info.append(f'  {nm:<18} kaynak tonuyla uyumsuz (>90 derece) murekkep payi %{frac*100:.2f}')
+            esik = 0.03 if il[0] < 35 else 0.015                # en koyu: kontur payi dogal
+            if frac > esik: warn.append(f'{nm}: murekkep payinin %{frac*100:.1f}i tonu uyumsuz kaynak alanda (zit renk beneği: orn. bej/kahve icinde mavi)')
 
 print('\n'.join(info))
 print()

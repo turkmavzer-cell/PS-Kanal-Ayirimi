@@ -46,4 +46,6 @@
 - [ ] Atölyeye sor (karar rehberi bölüm 8): açı (15°/25°/45°), elek sayısı, nokta büyümesi kompanzasyonu, en küçük basılabilir nokta/detay, kafa sayısı, siyah gibi küçük kanalın birleştirilmesi, spot yığılma mı CMY+K mı.
 - [ ] Kız kişisi: PSD'yi yeniden oluştur (düzeltilmiş filmler `Emprime_Kiz_AM_508`'de; Photoshop'ta bilgisayar erişimi gerekir). Bej kanal %0,21 → atılıp 5 renge inilebilir.
 - [ ] analiz.py/kalite_kontrol.py eşikleri atölye geri bildirimiyle ayarla; hale (upscaler) ölçümü henüz yok.
-- [ ] **Bölge saflığı planını uygula** (`docs/plan-bolge-safligi.md`): ön yumuşatma, bölge segmentasyonu, bölge başına izinli mürekkep, en koyu yalnızca çizgide, düz bölge tramsız, kenar ataması, aile bazlı palet, kalite kontrolü genişlet; kız + ayıda test.
+- [x] **Bölge saflığı planını uygula** (v8, `tools/bolge_am.py`; segmentasyon yerine ton ailesi + yumuşatma kullanıldı) (`docs/plan-bolge-safligi.md`): ön yumuşatma, bölge segmentasyonu, bölge başına izinli mürekkep, en koyu yalnızca çizgide, düz bölge tramsız, kenar ataması, aile bazlı palet, kalite kontrolü genişlet; kız + ayıda test.
+- [ ] bolge_am: aile içinde koyu ton gerekirse (koyu turkuaz kontur) aileye koyu mürekkep ayır; elbise beyazı/kâğıt ayrımı için daha iyi figür maskesi.
+- [ ] bolge_am'ı ayıda dene (geriye dönük kontrol).

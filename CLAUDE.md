@@ -15,7 +15,7 @@ Bu repo, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı çalış
 ## Zorunlu iş akışı (her yeni görsel; ayrıntı: `docs/arastirma/gorsel-analiz-karar-rehberi.md`)
 1. Önce `docs/arastirma/gorsel-analiz-karar-rehberi.md` oku. `python3 tools/analiz.py girdi.png [maske.png]` çalıştır, raporu kullan.
 2. Kullanıcı iş istediğinde **tişört rengini, kaç mürekkep (kafa sayısı) istediğini ve zemin/arka planın basılıp basılmayacağını sor**; önceden ya da tahminle karar verme. Cevap gelince başla.
-3. Ayır. Zıt renk karıştırma yasak (Lab ton farkı >110° olan mürekkep çifti ≥%30 karışır, her renk çifti için), en koyu hariç <%10 bileşen at, ≤3 px mikro parça sil.
+3. Ayır: illüstrasyon/tramlı işlerde `tools/bolge_am.py` (bölge saflığı; açık + koyu set, fon dahil). Zıt renk karıştırma yasak (Lab ton farkı >110° olan mürekkep çifti ≥%30 karışır, her renk çifti için), en koyu hariç <%10 bileşen at, ≤3 px mikro parça sil.
 4. `python3 tools/kalite_kontrol.py cikti_klasoru kaynak.png` çalıştır; uyarıları çöz ya da kullanıcıya bildir.
 5. %100 kesit + önizleme ile gözle doğrula. Kullanıcı yan yana karşılaştırma istemez; yalnızca bitmiş, doğrulanmış iş ver.
 6. Film/PSD 508 PPI. Yazdığını repoda doğrula (git/dosya), sonra "yazdım" de.

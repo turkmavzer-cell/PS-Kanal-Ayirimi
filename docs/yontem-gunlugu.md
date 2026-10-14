@@ -130,3 +130,11 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Gözle: %100 kesit (göz/yanak, sol fırça) temiz; Photoshop'ta 6 spot kanallı Multichannel, 508 PPI.
 - Bilinen: Bej (ten) kanalı yalnızca %0,65; palet seçimi düşük kullanımlı mürekkebi cezalandırmıyor — ileride düşük kullanımlı mürekkebi artık-hata pikselleriyle yeniden seç.
 - v7.1 geri bildirimi (kullanıcı, %100 Photoshop kesitleri): kahve yaprakta açık mavi, turkuaz fırçada koyu kahve, düz çiçekte leke. Ölçüldü ve nedenleri `docs/plan-bolge-safligi.md`'ye yazıldı. v7.1 bu yüzden **baskıya hazır değil**.
+
+## v8 — Kız, bölge saflığı (`tools/bolge_am.py`), açık 6 renk + koyu fon+5 renk, 508 PPI — 2026-10-14
+- Kullanıcı (soruldu): ikisi de; 6 mürekkep; zemin hepsi. Koyu tişörtte kâğıt beyazı basılmaz; fon 6 kafanın içinde (fon + 5 renk).
+- Plan (`docs/plan-bolge-safligi.md`) uygulandı: çift bilateral yumuşatma → ton aileleri (72°, 208°) → piksel yalnız kendi ailesinin mürekkebiyle karışır; en koyu mürekkep başka ailede yalnız çizgi/koyu dolu şekil maskesinde; düz bölgede indeks medyan + kaplama yumuşatma; palet aile başına açgözlü (aile 0: 3, aile 1: 2 + en koyu).
+- Ölçüm (yeni kontrol, kroma ≥5, ton farkı >90°): v7.1 → v8: Açık Mavi yanlış alanda %2,19 → %0,07; Koyu Kahve açık/orta yanlış alanda %11,87 → %1,73 (kalan: turkuaz şekillerin konturu). Bej kullanımı %0,65 → %8,3.
+- Hata bulunup düzeltildi: (1) çiçeğin içindeki koyu dolu şekiller yalnız kontur çıktı → çizgi maskesine "koyu (L<45, C<25) dolu şekil" eklendi; (2) koyu tişörtte kâğıt dokusu yüzünden tüm zemine beyaz fon noktası → kâğıtta fon 0, opaklık rampası (dE-5)/5; (3) figür maskesine sızan kâğıt (sağ alt) beyaz dikdörtgen yaptı → maske dışına bağlı kâğıt bileşenleri figür beyazı sayılmaz.
+- Gözle: üç şikâyet yeri (kahve yaprak, sol fırça, saç çiçeği) %100 simülasyonda temiz; koyu tişört tam önizleme kontrol edildi.
+- Bilinen: koyu tişörtte elbise sağ alt kenarı (kaynakta elbise beyazı kâğıtla birleşik) tişört rengi kaldı; çiçek konturu kaynakta koyu turkuaz, çıktıda koyu kahve (turkuaz ailesine koyu ton ayrılmadı).
