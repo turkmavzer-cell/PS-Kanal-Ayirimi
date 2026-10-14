@@ -152,3 +152,9 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Palet: Bej, Açık Mavi, Sarı, Turkuaz, Kahve, Koyu Kahve (kapsama %7,8 / 6,1 / 6,7 / 20,3 / 1,7 / 4,4).
 - Gözle (%100 kesit, yüz/gözlük ve elbise yaprakları): tram düzgün, düz leke yok, turkuaz üzerinde kahve çapak yok. Kalan: elbise kesitinde birkaç izole koyu kahve nokta (≈3-5 px) ve yüz kesitinde 3-4 küçük beyaz nokta.
 - Teslim: İndirilenler\Emprime_Kiz_Onizleme\ (Onizleme_Acik_Tisort.png indexed 508 PPI, onizleme_palet.json). Kullanıcı onayı / Photoshop düzenlemesi bekleniyor; 2. aşama (`onizlemeden_ayir.py`) onaydan sonra.
+
+## v9.1 — 2. aşama (kanallara ayırma) — 2026-10-14
+- Kullanıcı önizlemeyi değiştirmeden onayladı. `onizlemeden_ayir.py ... acik onizleme_palet.json` → 6 film (1-bit, 508 PPI), artık renk 0 px. `kalite_kontrol.py` temiz (≤3 px parça 0; zıt ton payı ≤%0,03; Koyu Kahve %1,13 uyumsuz ton, çizgi/kontur kaynaklı).
+- %100 kesit (elbise yaprakları, yüz/saç): film kompozitinde tram düzgün; kalan: turkuaz çiçekte birkaç izole koyu kahve nokta.
+- Photoshop 2021: `psd_olustur_tek_adim.jsx` File > Scripts > Browse ile çalıştı, 6 spot kanallı PSD (≈17,7 MB) oluştu.
+- Teslim: İndirilenler\Emprime_Kiz_Acik_508\ (Acik_Tisort\*.png, kanallar_hibrit.json, PSD).
