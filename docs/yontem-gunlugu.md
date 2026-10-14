@@ -115,3 +115,10 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Varsayılan: LPI=45, açı 15°, 600 PPI film (hücre 13,3 px = 0,56 mm); DMIN=0,03 (%3'ten küçük/büyük noktalar kırpılır). Env: AM=1 LPI ANG DMIN.
 - Gözle kontrol: yüz, kulak, karın tramlı ve dokulu; beyaz nokta/düz leke yok. Önceki FM çıktısından detay daha kaba (beklenen).
 - Atölye geri bildirimi bekleniyor: 45 lpi / 15° yeterli mi; mürekkep başına ayrı açı gerekir mi (moiré), mürekkep sayısı.
+
+## v7 — Kız kişisi (açık tişört, 6 mürekkep, AM 45 lpi/15°, 508 PPI) — 2026-10-14
+- Girdi: `kız kişisi net.png` 7000x10710, 508 PPI, suluboya illüstrasyon. Kullanıcı seçimi: açık tişört, 6 mürekkep, yalnızca figür (fırça darbeleri ve kâğıt zemin çıkar).
+- Figür maskesi: elle çokgen + GrabCut (`tools/gorsel_maske_grabcut.py`, 1750 px'te), sonra sol saç/boyun/etek kenarındaki turkuaz fırça artıkları temizlendi. Kalan: sol alt etek kenarı kabaca, kullanıcıya söylendi.
+- Yeni genel araç `tools/gorsel_am.py`: kâğıt beyaza normalize; her piksele en iyi (mürekkep a, mürekkep b, kâğıt) karışımı (doğrusal RGB, alan oranı); a ve b tek yuvarlak nokta ekranında art arda dolar (koyu çekirdek, açık halka) → çakışma yok. Palet: en koyu + k-means(5), tohum seçimi ağırlıklı dE ile (3,75).
+- Sonuç mürekkepler: Bej(%0,55, kullanımı çok az), Sarı, Turkuaz, Karamel, Kahve, Koyu Kahve. Sönük bir 6. mürekkep: Bej atılıp 5 renge inilebilir.
+- Doğrulama: azaltılmış çözünürlükte karışım simülasyonu + %100 kesit (yüz/saç, elbise); PSD Photoshop 2021'de 9094 yerine 7000x10710, 508 PPI, Multichannel açıldı.
