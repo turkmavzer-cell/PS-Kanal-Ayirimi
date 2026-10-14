@@ -119,3 +119,12 @@ Tasarım: "Everything in life is art" (kaligrafi yazı + oymalı barok panel), a
 - Yapı: gri ve siyah tramlar üst üste (siyahın %19,5'i grinin içinde; gri/siyah neredeyse hiç fon dışına taşmıyor) → ton arttıkça ikinci mürekkep eklenen "yığılmış ton" şeması. fon = tüm panel altında düz taban (koyu tişört altlığı gibi), yazı çevresinde ince (≈birkaç px) boşluk bırakılmış; yazı (siyah 2) fon/tramlarla neredeyse hiç çakışmıyor (%0,1–0,9).
 - Çıkarım: gerçek atölye tramı kaba (45 lpi ≈ 0,56 mm hücre), benim FM 3 px (0,127 mm) noktamdan çok daha iri. FM 3 px baskıda tutmama riski yüksek; AM 45 lpi / 15° atölyenin kanıtlı değeri. Renkli ayıcık için çok mürekkepli AM tram (açılar arası ayrım) denenmeli.
 - Kaynak belirsizliği: lpi/açı/şekil FFT ölçümü ve görsel inceleme; PSD'de halftone ayarı kaydı bulunmadı (resource boş), bu yüzden "muhtemelen" Photoshop bitmap halftone.
+
+## ÖÖRNEKK.psd analizi (atölye örneği #2, "Casa Blanca" illüstrasyonu)
+- 6704x9941 px, 508 PPI, 8-bit Multichannel, 13 spot kanal. Photoshop halftone ayarı dosyada 45 lpi olarak kayıtlı; kanal FFT'si de 45 lpi (periyot 11,2 px @508 PPI) veriyor.
+- Yöntem 651'den farklı: **CMY+K süreç (process) tramı** + altlık. Yellow/Magenta/Cyan/siyah kanalları aynı 45 lpi'de yuvarlak nokta; dört kanalın açısı da **45° (aynı)**, standart 15/75/0/45 değil → gözlem, nedeni bilinmiyor (atölyeye sorulacak).
+- CMY kanalları birbiriyle çakışıyor (üst üste basım): Y∩M≈%52, M∩C≈%85 vb. Bizim indeks ayrımımızdan (piksel başına tek mürekkep) farklı.
+- Her tonun 8-bit "copy" kanalı (sürekli ton) yedek olarak duruyor; tramlı 1-bit kanallar bunlardan üretilmiş.
+- Altlık "fon" iki sürümde (fon 1 / fon 2, ikincisi ≈%7 daha geniş → muhtemelen yayılmış/choke varyantı, kesin değil), kapsama %67–72, tek 2-seviye kanal; beyaz yazı alanları altlıktan boşaltılmış.
+- "siyah" adlı kanal tamamen dolu (tek değer) ve "beyaz -siyah" kanalı %4,8 kapsama (yazı alanı) → rolleri kesin değil.
+- Görsel: açık/orta renkli, suluboya tarzı; koyu tişört için tasarlanmış gibi (beyaz altlık + CMY).
