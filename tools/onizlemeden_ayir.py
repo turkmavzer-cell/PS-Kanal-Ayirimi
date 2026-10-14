@@ -9,7 +9,8 @@ Kullanim:
            Fon = tisort rengi olmayan her yer, en koyu murekkebin alti haric, disa bakan kenarda CHOKE_PX choke.
     onizleme_palet.json (1. asamanin ciktisi) verilirse tisort rengi oradan alinir; yoksa tisort_rgb (orn. 30,30,30)
     ya da acik icin 255,255,255.
-Env: PPI(508) MINW(3) MINPX(4) CHOKE_PX(4) MAXRENK(6, uyari icin) DE_TOL(3: bu kadar yakin renkler ayni murekkep)
+Env: LAP_ALTLIK(0): 1 ise "lap" = tramli koyu noktalarin altina daha acik taban murekkep filmi uzar (ust uste baski). LAP_WIN(9) LAP_MIN(0.15)
+     PPI(508) MINW(3) MINPX(4) CHOKE_PX(4) MAXRENK(6, uyari icin) DE_TOL(3: bu kadar yakin renkler ayni murekkep)
 
 Kurallar:
 - Her farkli renk bir murekkep/film. Kullanicinin degistirdigi renk (Color Table) yeni murekkep rengi olur.
@@ -100,6 +101,25 @@ def auto_ad(rgb_, used):
 
 def save(mask, path): Image.frombytes('1', (W, H), np.packbits(~mask, axis=1).tobytes()).save(path, dpi=(PPI, PPI), compress_level=6)
 
+LAP_ALT = int(E('LAP_ALTLIK', 0)); LAP_WIN = int(E('LAP_WIN', 9)); LAP_MIN = float(E('LAP_MIN', 0.15))
+inks = sorted(inks, key=lambda j: -lab[j][0])              # acik -> koyu
+EXT = {}                                                   # lap: murekkep j -> daha koyu noktalarin altina uzanan ek piksel
+if LAP_ALT:
+    def _box(m): return cv2.boxFilter(m.astype(np.float32), -1, (LAP_WIN, LAP_WIN), normalize=True, borderType=cv2.BORDER_REPLICATE)
+    fp = _box(lbl == sh)
+    for k, dk in enumerate(inks):
+        dm = (lbl == dk)
+        if k == 0 or not dm.any(): continue
+        best = np.zeros((H, W), np.float32); who = np.full((H, W), -1, np.int16)
+        for q in range(k):                                 # daha acik murekkepler
+            f = _box(lbl == inks[q]); up = f > best; best[up] = f[up]; who[up] = q
+        ok = dm & (best >= LAP_MIN) & (best > 2*fp)
+        for q in range(k):
+            a_ = ok & (who == q)
+            if a_.any(): EXT[inks[q]] = EXT.get(inks[q], np.zeros((H, W), bool)) | a_
+        print(f'  lap: {cols[dk].tolist()} noktalarinin %{100*ok.sum()/max(dm.sum(), 1):.1f}i altina taban uzatildi')
+        del best, who
+    del fp
 d = os.path.join(out_dir, setn); os.makedirs(d, exist_ok=True)
 sets = []; used = set(); n0 = 1
 inks = sorted(inks, key=lambda j: -lab[j][0])              # baski sirasi: acik -> koyu
@@ -115,6 +135,7 @@ if tur == 'koyu':
     print(f'  01_Fon_Beyaz kapsama %{100*fon.mean():.2f}'); n0 = 2
 for n_, j in enumerate(inks):
     m = clean(lbl == j)
+    if j in EXT: m |= EXT[j]
     if m.mean() < 0.0001:
         print(f'  UYARI: renk {cols[j].tolist()} temizlikten sonra neredeyse bos (%{100*m.mean():.3f}); kenar yumusatma artigi sayilip film yazilmadi'); continue
     ad = auto_ad(cols[j], used); fn = f'{len(sets)+1:02d}_{ad}.png'
@@ -122,6 +143,8 @@ for n_, j in enumerate(inks):
     print(f'  {fn} renk {cols[j].tolist()} kapsama %{100*m.mean():.2f}')
 jp = os.path.join(out_dir, 'kanallar_hibrit.json')
 meta = json.load(open(jp)) if os.path.exists(jp) else {'W': W, 'H': H, 'ppi': PPI, 'sets': {}}
-meta['sets'][setn] = sets; meta.setdefault('kaynak', {})[setn] = os.path.basename(inp)   # acik ve koyu ayni klasorde birlikte durabilir
+meta['sets'][setn] = sets
+if LAP_ALT: meta['lap_altlik'] = True
+meta.setdefault('kaynak', {})[setn] = os.path.basename(inp)   # acik ve koyu ayni klasorde birlikte durabilir
 json.dump(meta, open(jp, 'w'), ensure_ascii=False, indent=1)
 print('2. ASAMA bitti. Sonra: tools/kalite_kontrol.py ve PSD (psd_olustur_tek_adim.jsx).')

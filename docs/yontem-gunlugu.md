@@ -178,3 +178,9 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Sonuç: koyu yaprakta beyaz oranı 0,235 → 0,156; kâğıtsız piksel %73,4. Nokta kenarlarında küçük beyaz boşluklar kalıyor.
 - Yapılmadı: film aşamasında taban filminin noktaların altına uzanması (üst üste baskı); açık mor şekil için paletde mürekkep yok.
 - Önizleme: İndirilenler\Emprime_Kiz_Lap_Onizleme (yalnız 1. aşama, film yok).
+
+## 2026-10-14 — Kız, lap altlıklı filmler (onizlemeden_ayir.py LAP_ALTLIK=1)
+- `LAP_ALTLIK=1 python3 tools/onizlemeden_ayir.py onizleme.png cikti acik palet.json`: her koyu mürekkep pikselinin altına, çevresinde (9 px pencere) en baskın daha açık mürekkep filmi uzatılır (taban > 2×kâğıt ve ≥ 0,15). Üst üste baskı, lap yorumuyla.
+- Birleşik görüntü (açık→koyu) önizlemeyle birebir aynı (fark 0). kalite_kontrol `lap_altlik` işaretliyse film çakışması uyarısını atlar.
+- Altına taban uzayan koyu nokta oranı: Sarı %24, Turkuaz %26, Kahve %16, Koyu Kahve %70. Kapsama: Bej %13,8, Açık Mavi %17,7, Sarı %7,2, Turkuaz %16,8, Kahve %2,6, Koyu Kahve %4,3.
+- Çıktı: İndirilenler\Emprime_Kiz_LapAltlik_508 (filmler + PSD). Erkut onayı yok; atölye filminde gerçekten istenen bu mu, doğrulanmadı.

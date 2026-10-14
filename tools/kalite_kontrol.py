@@ -39,7 +39,7 @@ for nm, fn, rgb, a in films:
 for i in range(len(films)):
     for j in range(i+1, len(films)):
         ov = (films[i][3] & films[j][3]).sum()
-        if 'Fon' in films[i][0] or 'Fon' in films[j][0]: continue   # fon (altlik) renklerin altinda olmali
+        if 'Fon' in films[i][0] or 'Fon' in films[j][0] or J.get('lap_altlik'): continue   # lap_altlik: taban noktalarin altina bilerek uzanir   # fon (altlik) renklerin altinda olmali
         if ov > 0.001*min(films[i][3].sum(), films[j][3].sum()):
             warn.append(f'{films[i][0]} ile {films[j][0]} cakisiyor: {ov} px')
 
