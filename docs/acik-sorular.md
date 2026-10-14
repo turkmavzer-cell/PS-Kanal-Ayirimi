@@ -40,3 +40,4 @@
 - [ ] Koyu bolgelerdeki dagnik tek beyaz noktalar (parlama maskesi kalintisi) temizlensin.
 
 - [x] Koyu alanlardaki beyaz benekler SPEC_MIN ile temizlendi (v5.3).
+- [ ] Atölye (WhatsApp grubu) görüşü bekleniyor: 3 px (0,127 mm) nokta baskıda tutar mı; siyah kanal (%0,17) ayrı film olarak mantıklı mı; elek/mürekkep/film türü.

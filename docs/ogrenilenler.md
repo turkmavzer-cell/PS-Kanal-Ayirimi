@@ -108,3 +108,5 @@ Bkz. `docs/acik-sorular.md`.
 - Koyu gölgeler nötr olabilir (R≈G≈B); kahve-siyah mürekkep bunlara uymaz, ayrı nötr siyah mürekkep gerekir (ayıcık kulak/karın).
 
 - Girdi çözünürlüğü değişince (örn. üst çözünürlüğe netleştirme) tüm piksel-birimli eşikler ölçeklenmeli; büyütme (upscale) araçları kenarda renkli hale bırakabilir — lacivert/renk maskeleri ince yapıları dışlamalı.
+
+- Kaynak görsel kalitesi sonucu en çok etkileyen girdidir: 1024 px genişlikteki bulanık görselde tüy detayı yoktu; üst çözünürlüğe netleştirilmiş 4096x6144 sürüm belirgin daha iyi sonuç verdi (kullanıcı geri bildirimi, 2026-10-14). Düşük çözünürlüklü girdide önce netleştirme önerilir.
