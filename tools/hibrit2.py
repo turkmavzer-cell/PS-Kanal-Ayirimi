@@ -176,33 +176,74 @@ def score(rg, ix):
     dk = objm & (labc[...,0] < 42)                                                  # koyu kutleler (kulak, karin, cene alti)
     fl = 100*(flat & dk).sum()/max(dk.sum(),1)
     return de[om].mean(), fl
-cands = []
-for seed in range(int(os.environ.get('PAL_N', 3))):
-    for pa in (0.0, 0.3):
-        for band in ((3, 8), (10, 28), (18, 40)):
-            c = make_pal(seed, pa, band); rg, pl, ix = run_pal(c); de, fl = score(rg, ix)
-            cands.append((de + FLAT_W*fl, de, fl, seed, (pa, band), c, rg, pl, ix))
-            log(f'  palet adayi tohum{seed} dengeleme{pa} bant{band}: dE {de:.2f} koyu-duz-leke %{fl:.1f} puan {de+FLAT_W*fl:.2f}')
-    cands = sorted(cands, key=lambda r: r[0])[:4]                                    # bellek: en iyi 4 aday kalir
-best = min(cands, key=lambda r: r[0]); _, _, _, bseed, bpa, cen, rgbp, pal, idx = best
-log('SECILEN palet: tohum', bseed, 'dengeleme/bant', bpa)
-BEAR = {nm: tuple(int(round(v*255)) for v in c) for nm, c in zip(bear_names, rgbp)}
-bdist = [np.linalg.norm(cen[i]-badge_L) for i in range(NK)]; BADGE_INK = bear_names[int(np.argmin(bdist))]
-log('palet', BEAR, 'rozet:', BADGE_INK)
-idx[spec] = 0
-# koyu/orta bolgelerdeki izole kagit (beyaz) noktalari en yakin murekkebe cevir
-lum2 = comp @ np.array([0.2126,0.7152,0.0722], np.float32)
-bl_l = cv2.GaussianBlur(lum2, (0,0), 3.0)
-ppx = ((idx == 0) & (au[...,0] > 0.5) & ~spec).astype(np.uint8)
-nb = cv2.boxFilter(ppx.astype(np.float32), -1, (5,5), normalize=False) - ppx
-fix = (ppx > 0) & ((bl_l < 0.55) | ((nb < 3) & (bl_l < 0.85)))
-if fix.any():
-    pg = np.sqrt(pal[1:]); cg = np.sqrt(np.clip(lin(comp[fix]), 0, 1))
-    idx[fix] = 1 + np.argmin(((cg[:,None,:]-pg[None,:,:])**2).sum(2), axis=1)
-log('hata yayilimi bitti', idx.shape, 'temizlenen beyaz nokta', int(fix.sum()))
-big = np.repeat(np.repeat(idx, DOT, 0), DOT, 1)
-oy, ox = int(round(y0_*s)), int(round(x0*s)); hh, ww = min(big.shape[0], H-oy), min(big.shape[1], W-ox)
-bear_idx = np.zeros((H,W), np.uint8); bear_idx[oy:oy+hh, ox:ox+ww] = big[:hh,:ww]
+AM = os.environ.get('AM', '0') == '1'                                           # AM tram (atolye yontemi): yuvarlak nokta, sabit lpi/aci
+if AM:
+    LPI = float(os.environ.get('LPI', 45)); ANG = float(os.environ.get('ANG', 15)); DMIN = float(os.environ.get('DMIN', 0.03))
+    cen = make_pal(int(os.environ.get('PAL_SEED', 0)), 0.0, (3, 8))
+    rgbp = np.clip(cv2.cvtColor(cen.reshape(1,-1,3), cv2.COLOR_Lab2RGB).reshape(-1,3), 0, 1)
+    BEAR = {nm: tuple(int(round(v*255)) for v in c) for nm, c in zip(bear_names, rgbp)}
+    bdist = [np.linalg.norm(cen[i]-badge_L) for i in range(NK)]; BADGE_INK = bear_names[int(np.argmin(bdist))]
+    log('AM palet', BEAR, 'rozet:', BADGE_INK, 'lpi', LPI, 'aci', ANG)
+    # ton zinciri: kagit -> en acik murekkep -> ... -> en koyu (Lab'da poligon); her piksel zincire izdusurulur
+    paper_lab = rgb2lab(np.uint8(np.array(PAPER))[None,None,:])[0,0]
+    nodes = np.vstack([paper_lab[None], cen[::-1]]).astype(np.float32)          # dugum j (1..NK) = murekkep no NK-j+1
+    nid = np.array([0] + [NK-j+1 for j in range(1, NK+1)], np.uint8)
+    labd = rgb2lab(comp); objd = au[...,0] > 0.5
+    u = np.zeros((dh, dw), np.float32)
+    for r0 in range(0, dh, 256):
+        P = labd[r0:r0+256]; bd = np.full(P.shape[:2], 1e18, np.float32); bu = np.zeros(P.shape[:2], np.float32)
+        for sg in range(NK):
+            A_, B_ = nodes[sg], nodes[sg+1]; AB = B_-A_
+            tt = np.clip(((P-A_)@AB)/float(AB@AB), 0, 1); dd = ((P-(A_+tt[...,None]*AB))**2).sum(2)
+            m = dd < bd; bd[m] = dd[m]; bu[m] = sg + tt[m]
+        u[r0:r0+256] = bu
+    u[~objd | spec] = 0
+    # ekran esigi: yuvarlak nokta (kosinus spot), alan-dogrusal olacak sekilde CDF ile duzlestirilmis
+    cell = PPI/LPI; ca, sa = np.cos(np.radians(ANG)), np.sin(np.radians(ANG))
+    sm_ = np.random.RandomState(3).rand(2, 1000000)
+    Ssamp = np.sort(1 - ((np.cos(2*np.pi*sm_[0]) + np.cos(2*np.pi*sm_[1]))/4 + 0.5)); qs = np.linspace(0, 1, Ssamp.size)
+    uu = cv2.resize(u, (dw*DOT, dh*DOT), interpolation=cv2.INTER_LINEAR)
+    oy, ox = int(round(y0_*s)), int(round(x0*s)); hh, ww = min(uu.shape[0], H-oy), min(uu.shape[1], W-ox)
+    bear_idx = np.zeros((H,W), np.uint8)
+    for r0 in range(0, hh, 512):
+        ur = uu[r0:min(r0+512, hh), :ww]; k = np.minimum(np.floor(ur).astype(np.int32), NK-1); f = ur - k
+        yy = (oy + r0 + np.arange(ur.shape[0]))[:,None].astype(np.float32); xx = (ox + np.arange(ww))[None,:].astype(np.float32)
+        X = (xx*ca + yy*sa)/cell; Y = (-xx*sa + yy*ca)/cell
+        Sv = 1 - ((np.cos(2*np.pi*X) + np.cos(2*np.pi*Y))/4 + 0.5)
+        T = np.interp(Sv, Ssamp, qs).astype(np.float32)
+        f = np.where(f < DMIN, 0, np.where(f > 1-DMIN, 1, f))
+        bear_idx[oy+r0:oy+r0+ur.shape[0], ox:ox+ww] = nid[np.where(f > T, k+1, k)]
+    del uu, u, labd
+    big = None
+    log('AM tram bitti')
+else:
+    cands = []
+    for seed in range(int(os.environ.get('PAL_N', 3))):
+        for pa in (0.0, 0.3):
+            for band in ((3, 8), (10, 28), (18, 40)):
+                c = make_pal(seed, pa, band); rg, pl, ix = run_pal(c); de, fl = score(rg, ix)
+                cands.append((de + FLAT_W*fl, de, fl, seed, (pa, band), c, rg, pl, ix))
+                log(f'  palet adayi tohum{seed} dengeleme{pa} bant{band}: dE {de:.2f} koyu-duz-leke %{fl:.1f} puan {de+FLAT_W*fl:.2f}')
+        cands = sorted(cands, key=lambda r: r[0])[:4]                                    # bellek: en iyi 4 aday kalir
+    best = min(cands, key=lambda r: r[0]); _, _, _, bseed, bpa, cen, rgbp, pal, idx = best
+    log('SECILEN palet: tohum', bseed, 'dengeleme/bant', bpa)
+    BEAR = {nm: tuple(int(round(v*255)) for v in c) for nm, c in zip(bear_names, rgbp)}
+    bdist = [np.linalg.norm(cen[i]-badge_L) for i in range(NK)]; BADGE_INK = bear_names[int(np.argmin(bdist))]
+    log('palet', BEAR, 'rozet:', BADGE_INK)
+    idx[spec] = 0
+    # koyu/orta bolgelerdeki izole kagit (beyaz) noktalari en yakin murekkebe cevir
+    lum2 = comp @ np.array([0.2126,0.7152,0.0722], np.float32)
+    bl_l = cv2.GaussianBlur(lum2, (0,0), 3.0)
+    ppx = ((idx == 0) & (au[...,0] > 0.5) & ~spec).astype(np.uint8)
+    nb = cv2.boxFilter(ppx.astype(np.float32), -1, (5,5), normalize=False) - ppx
+    fix = (ppx > 0) & ((bl_l < 0.55) | ((nb < 3) & (bl_l < 0.85)))
+    if fix.any():
+        pg = np.sqrt(pal[1:]); cg = np.sqrt(np.clip(lin(comp[fix]), 0, 1))
+        idx[fix] = 1 + np.argmin(((cg[:,None,:]-pg[None,:,:])**2).sum(2), axis=1)
+    log('hata yayilimi bitti', idx.shape, 'temizlenen beyaz nokta', int(fix.sum()))
+    big = np.repeat(np.repeat(idx, DOT, 0), DOT, 1)
+    oy, ox = int(round(y0_*s)), int(round(x0*s)); hh, ww = min(big.shape[0], H-oy), min(big.shape[1], W-ox)
+    bear_idx = np.zeros((H,W), np.uint8); bear_idx[oy:oy+hh, ox:ox+ww] = big[:hh,:ww]
 del big, img, comp, cu, au
 
 # ---------- 4) filmler ----------

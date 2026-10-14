@@ -109,3 +109,9 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Yeni sorun: büyütme artefaktı ince mavi kenar halesi "lacivert" sayılıp ayı kenarlarında lacivert nokta/çizgi yaptı ve ayı kenarını yedi. Çözüm: lacivert maskesine morfolojik açma (≈0.5K px'ten ince yapılar lacivert değil).
 - Bölge testi koordinatları görsel dizilimine bağlıdır (1024 birimi, bu görsel için); yeni dizilimde REGIONS env ile verilmeli. Bölge testi içindeki değişken K, ölçek çarpanını eziyordu → KW olarak yeniden adlandırıldı.
 - Sonuç: kulak/karın/çene/yüz %100'de gözle kontrol edildi, düz leke ve beyaz nokta yok.
+
+## v6 — AM tram (atölye yöntemi) (2026-10-14)
+- İstek: ayı desenini AM tram olarak yeniden ayarla. Yöntem (hibrit2.py, AM=1): palet k-means (siyah dahil 8 mürekkep); her piksel kağıt→en açık→…→siyah ton zincirine Lab'da izdüşürülür (u = segment + t); ardından tek bir yuvarlak-nokta ekran eşiği (kosinüs spot fonksiyonu, CDF ile alan-doğrusal) uygulanır: u'nun kesir kısmı > eşik ise sonraki (koyu) mürekkep, değilse önceki. Böylece noktalar üst üste binmez (indeks ayrımı), tek açı yeterli.
+- Varsayılan: LPI=45, açı 15°, 600 PPI film (hücre 13,3 px = 0,56 mm); DMIN=0,03 (%3'ten küçük/büyük noktalar kırpılır). Env: AM=1 LPI ANG DMIN.
+- Gözle kontrol: yüz, kulak, karın tramlı ve dokulu; beyaz nokta/düz leke yok. Önceki FM çıktısından detay daha kaba (beklenen).
+- Atölye geri bildirimi bekleniyor: 45 lpi / 15° yeterli mi; mürekkep başına ayrı açı gerekir mi (moiré), mürekkep sayısı.
