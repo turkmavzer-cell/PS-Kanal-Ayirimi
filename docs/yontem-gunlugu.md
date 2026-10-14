@@ -145,3 +145,10 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Düzeltmeler: çizgi = yalnız mutlak koyu (L<38, C<25); MINW=3 px'ten ince her yapı silinir (açma); yumuşak ton alanında mürekkep çifti 41 px pencerede çoğunluk oyuyla sabitlenir ve kaplama o çift için yeniden çözülür; ayrıntıda (çil) oylama hatayı artırırsa özgün çifte dönülür; yumuşak ton alanında dolu (tramsız) yama yapılmaz (kaplama ≤%96) ve kaplama yumuşatılır; ayrıntı pikselleri yumuşatılmamış kaynakla çözülür; palet iyileştirme (en az kullanılan mürekkebi en kötü temsil edilen renkle değiştir, ≥%3 hata düşüşü, mevcut mürekkebe dE<12 ise reddet).
 - Sonuç: kenarlarda/damarda koyu çapak yok; ten yumuşak geçişli. Koyu sette iyileştirme açık maviyi sarıya çevirdi (ten/saç için), Bej %0,14 kaldı (kalite kontrol uyarısı: kafa boşaltılabilir).
 - Bilinen: ten hâlâ sarı noktalı (palette pembe-şeftali ten mürekkebi yok); turkuaz yapraktaki koyu damar artık yok (kaynakta koyu turkuaz, ayrı mürekkep yok).
+
+## v9.1 — Kız kişisi, iki aşamalı yöntem 1. aşama (önizleme) — 2026-10-14
+- Kullanıcı (soruldu): açık tişört, 6 mürekkep, zemin hepsi, **iki aşamalı**. Girdi: İndirilenler\kız kişisi net.png (7000x10710, 508 PPI, 50 MB).
+- Komut: `ASAMA=onizleme python3 tools/bolge_am.py kiz.png onizleme 6` (~94 sn, 2 çekirdek). Film üretilmedi.
+- Palet: Bej, Açık Mavi, Sarı, Turkuaz, Kahve, Koyu Kahve (kapsama %7,8 / 6,1 / 6,7 / 20,3 / 1,7 / 4,4).
+- Gözle (%100 kesit, yüz/gözlük ve elbise yaprakları): tram düzgün, düz leke yok, turkuaz üzerinde kahve çapak yok. Kalan: elbise kesitinde birkaç izole koyu kahve nokta (≈3-5 px) ve yüz kesitinde 3-4 küçük beyaz nokta.
+- Teslim: İndirilenler\Emprime_Kiz_Onizleme\ (Onizleme_Acik_Tisort.png indexed 508 PPI, onizleme_palet.json). Kullanıcı onayı / Photoshop düzenlemesi bekleniyor; 2. aşama (`onizlemeden_ayir.py`) onaydan sonra.

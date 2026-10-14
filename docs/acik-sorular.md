@@ -50,3 +50,5 @@
 - [ ] bolge_am: aile içinde koyu ton gerekirse (koyu turkuaz kontur) aileye koyu mürekkep ayır; elbise beyazı/kâğıt ayrımı için daha iyi figür maskesi.
 - [ ] bolge_am'ı ayıda dene (geriye dönük kontrol).
 - [ ] İki aşamalı yöntemi gerçek görselle dene (önizleme 75 MP indexed PNG Photoshop'ta düzenleme hızı; Color Table ile renk değişimi; 2. aşamada artık piksel raporu).
+
+- [ ] Kız kişisi v9.1: önizleme (İndirilenler\Emprime_Kiz_Onizleme) kullanıcı onayı bekleniyor; onaydan sonra `onizlemeden_ayir.py ... acik onizleme_palet.json`, kalite kontrol, PSD. Elbise bölgesinde izole koyu nokta/yüzde beyaz nokta temizliği (MINPX) değerlendirilebilir.
