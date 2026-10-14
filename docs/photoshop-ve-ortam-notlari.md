@@ -24,7 +24,7 @@ Teknik, pratik dersler. Çoğu deneyimle öğrenildi [deney].
 - Film PNG'lerinde **siyah = mürekkep** (Photoshop spot/CMYK kanal kuralı).
 
 ## Dosya biçimi
-- 1-bit PNG, 600 PPI meta verisiyle (`dpi=(600,600)`). 124 MP'lik bir film yaklaşık 0,3–0,9 MB.
+- 1-bit PNG, 508 PPI (eskiden 600; kullanıcı 2026-10-14 508 istedi) meta verisiyle (`dpi=(508,508)`). 124 MP'lik bir film yaklaşık 0,3–0,9 MB.
 - Belgenin PSB olarak kaydı henüz yapılmadı (~900 MB beklenir).
 
 ## Python işlem notları

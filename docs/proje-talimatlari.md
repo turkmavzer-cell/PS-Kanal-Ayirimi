@@ -32,6 +32,6 @@ SÜREKLİ GELİŞTİRME:
 - Photoshop betikleri File > Scripts > Browse ile çalıştırılır; oluşturma ve renk atama betiklerini ayrı çalıştır.
 
 ÇIKTI TESLİMİ:
-- Filmler: 1-bit PNG, siyah = mürekkep, 600 PPI, baskı sırasına göre numaralı, açık ve koyu tişört için ayrı klasör; kullanıcının İndirilenler klasörüne yaz.
+- Filmler: 1-bit PNG, siyah = mürekkep, 508 PPI (kullanıcı 2026-10-14: PSD yaparken 508), baskı sırasına göre numaralı, açık ve koyu tişört için ayrı klasör; kullanıcının İndirilenler klasörüne yaz.
 - İş bitince kısa özet ver: ne çıktı, bilinen sorunlar, bir sonraki adım. Adımları tek tek anlatma.
 ```

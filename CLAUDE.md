@@ -9,6 +9,7 @@ Bu repo, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı çalış
 - Düz renkli tasarım **tramsız spot** ayrılır; tram yalnızca degrade/fotoğraf. CMYK Split Channels bu işin cevabı değildir.
 - Dosya yeri ya da ayar belirsizse **kullanıcıya sor**, tahmin etme (tişört rengi, baskı boyutu, elek, mürekkep, film türü).
 - Kenar ara tonları mürekkep değildir; gerçek mürekkep sayısı tasarımdan gelir.
+- Film/PSD çözünürlüğü **508 PPI** (kullanıcı talimatı); `hibrit2.py` varsayılanı 508.
 - Sonuçları önizleme + %100 kenar kesitiyle gözle doğrula.
 
 ## Çalışma şekli

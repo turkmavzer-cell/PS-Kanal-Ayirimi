@@ -10,7 +10,7 @@ Image.MAX_IMAGE_PIXELS = None
 src_path, out_dir = sys.argv[1], sys.argv[2]
 DOT = int(sys.argv[3]) if len(sys.argv) > 3 else 3
 NK = int(sys.argv[4]) if len(sys.argv) > 4 else 8
-PPI, WCM = 600, 38.5
+PPI, WCM = int(os.environ.get("PPI","508")), 38.5   # atolye PSD cozunurlugu 508 PPI (kullanici istegi 2026-10-14)
 K = 1.0                                                   # kaynak cozunurluk carpani (1024 genislik = 1); sw bilinince ayarlanir
 SPEC_L = float(os.environ.get('SPEC_L', 96.5))           # bu parlakligin ustu = mürekkep yok (parlama)
 SHARP = float(os.environ.get('SHARP', 0.25))             # yerel kontrast miktari
