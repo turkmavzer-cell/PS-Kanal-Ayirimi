@@ -165,3 +165,9 @@ Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol ara
 | Tişört rengi/renk sayısı tahmin edildi | Soru sorulmadı | İş istenince tişört rengi, renk sayısı ve zemini **sor** |
 | Atölye kapasitesini aşan renk (9 film) | Kafa sayısı bilinmiyordu | Hedef renk sayısını kullanıcı/atölye söyler |
 | Aşırı iddia (repoda yazılı demek) | Doğrulanmadı | Yazdığımı `git`/dosyadan doğrula, sonra söyle |
+
+## Bölge saflığı hataları (kullanıcı geri bildirimi, kız v7.1, 2026-10-14)
+- Kroma eşiğiyle (>12) yazılan zıt renk kuralı **soluk renkleri** (açık mavi C≈9) kaçırır → kural kroma ≥5'ten ton açısıyla çalışmalı.
+- "En koyu mürekkep muaf" istisnası, tonu koyulaştırmak için kötüye kullanıldı (koyu kahvenin %14'ü turkuaz alanda) → en koyu mürekkep yalnızca çizgi/kontur maskesinde.
+- Düz alan (yerel std ≈2) piksel karışımıyla tramlanınca leke olur → düz bölge tek mürekkep/sabit ton, kâğıt dokusu önceden yumuşatılır.
+- Kök neden: piksel bazlı karışım bölgeyi bilmiyor. Plan: `docs/plan-bolge-safligi.md`.

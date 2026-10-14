@@ -129,3 +129,4 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Sonuç mürekkepler: Açık Mavi, Bej, Sarı, Turkuaz, Kahve, Koyu Kahve. `kalite_kontrol.py` temiz (zıt ton payı ≤%0,05; ≤3 px parça 0).
 - Gözle: %100 kesit (göz/yanak, sol fırça) temiz; Photoshop'ta 6 spot kanallı Multichannel, 508 PPI.
 - Bilinen: Bej (ten) kanalı yalnızca %0,65; palet seçimi düşük kullanımlı mürekkebi cezalandırmıyor — ileride düşük kullanımlı mürekkebi artık-hata pikselleriyle yeniden seç.
+- v7.1 geri bildirimi (kullanıcı, %100 Photoshop kesitleri): kahve yaprakta açık mavi, turkuaz fırçada koyu kahve, düz çiçekte leke. Ölçüldü ve nedenleri `docs/plan-bolge-safligi.md`'ye yazıldı. v7.1 bu yüzden **baskıya hazır değil**.
