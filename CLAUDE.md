@@ -3,7 +3,7 @@
 Bu repo, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı çalışmasıdır. Kullanıcı Türkçe konuşur; direkt ve kısa iletişim tercih eder.
 
 ## Her oturumun başında
-Önce oku: `README.md`, `docs/ogrenilenler.md`, `docs/yontem-gunlugu.md`, `docs/acik-sorular.md`, `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Orada yazanı yeniden keşfetme.
+Önce oku: `README.md`, `docs/ogrenilenler.md`, `docs/yontem-gunlugu.md`, `docs/acik-sorular.md`, `docs/arastirma/gorsel-analiz-karar-rehberi.md`, `docs/is-akisi-tek-ve-iki-asama.md`. Orada yazanı yeniden keşfetme.
 
 ## Ana kurallar (özet)
 - Düz renkli tasarım **tramsız spot** ayrılır; tram yalnızca degrade/fotoğraf. CMYK Split Channels bu işin cevabı değildir.
@@ -14,7 +14,9 @@ Bu repo, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı çalış
 
 ## Zorunlu iş akışı (her yeni görsel; ayrıntı: `docs/arastirma/gorsel-analiz-karar-rehberi.md`)
 1. Önce `docs/arastirma/gorsel-analiz-karar-rehberi.md` oku. `python3 tools/analiz.py girdi.png [maske.png]` çalıştır, raporu kullan.
-2. Kullanıcı iş istediğinde **tişört rengini, kaç mürekkep (kafa sayısı) istediğini ve zemin/arka planın basılıp basılmayacağını sor**; önceden ya da tahminle karar verme. Cevap gelince başla.
+2. Kullanıcı iş istediğinde **tek aşamalı mı iki aşamalı mı** yapılacağını (kısa açıklamasıyla), **tişört rengini, kaç mürekkep (kafa sayısı) istediğini ve zemin/arka planın basılıp basılmayacağını sor**; önceden ya da tahminle karar verme. Cevap gelince başla. Yöntemlerin açıklaması: `docs/is-akisi-tek-ve-iki-asama.md`.
+   - Tek aşamalı: program renkleri seçer, doğrudan filmlere ayırır.
+   - İki aşamalı: önce kanallara ayrılmamış tramlı önizleme (`ASAMA=onizleme`), kullanıcı Photoshop'ta renkleri düzeltip onaylar, sonra `tools/onizlemeden_ayir.py` ile onaylanan görüntü birebir filmlere ayrılır. Onay gelmeden 2. aşamaya geçme.
 3. Ayır: illüstrasyon/tramlı işlerde `tools/bolge_am.py` (bölge saflığı; açık + koyu set, fon dahil). Zıt renk karıştırma yasak (Lab ton farkı >110° olan mürekkep çifti ≥%30 karışır, her renk çifti için), en koyu hariç <%10 bileşen at, ≤3 px mikro parça sil.
 4. `python3 tools/kalite_kontrol.py cikti_klasoru kaynak.png` çalıştır; uyarıları çöz ya da kullanıcıya bildir.
 5. %100 kesit + önizleme ile gözle doğrula. Kullanıcı yan yana karşılaştırma istemez; yalnızca bitmiş, doğrulanmış iş ver.

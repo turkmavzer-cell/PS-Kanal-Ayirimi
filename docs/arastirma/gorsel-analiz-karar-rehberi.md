@@ -11,7 +11,7 @@ Tarih: 2026-10-14.
 ## 0. Zorunlu akış (her yeni iş)
 
 1. `python3 tools/analiz.py girdi.png` çalıştır, raporu oku (bölüm 1).
-2. Kullanıcıya sor: **tişört rengi** (açık/koyu/ikisi), **kaç mürekkep** (atölyenin kafa sayısı), **zemin/arka plan baskıda olsun mu**. Kullanıcı bu üçünü "iş istediğinde bana sor" diye belirtti, önceden sorma, iş istenince sor.
+2. Kullanıcıya sor: **tek aşamalı mı iki aşamalı mı** (bkz. `docs/is-akisi-tek-ve-iki-asama.md`), **tişört rengi** (açık/koyu/ikisi), **kaç mürekkep** (atölyenin kafa sayısı), **zemin/arka plan baskıda olsun mu**. Kullanıcı bu üçünü "iş istediğinde bana sor" diye belirtti, önceden sorma, iş istenince sor.
 3. Yöntemi seç (bölüm 2) ve parametreleri bu rehberden al.
 4. Ayır, sonra `python3 tools/kalite_kontrol.py cikti_klasoru` çalıştır (bölüm 7); uyarıları çöz.
 5. Önizleme + %100 kesitle gözle doğrula (özellikle: açık tonlu sıcak alanlar, ince çizgiler, kenarlar).

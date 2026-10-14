@@ -49,3 +49,4 @@
 - [x] **Bölge saflığı planını uygula** (v8, `tools/bolge_am.py`; segmentasyon yerine ton ailesi + yumuşatma kullanıldı) (`docs/plan-bolge-safligi.md`): ön yumuşatma, bölge segmentasyonu, bölge başına izinli mürekkep, en koyu yalnızca çizgide, düz bölge tramsız, kenar ataması, aile bazlı palet, kalite kontrolü genişlet; kız + ayıda test.
 - [ ] bolge_am: aile içinde koyu ton gerekirse (koyu turkuaz kontur) aileye koyu mürekkep ayır; elbise beyazı/kâğıt ayrımı için daha iyi figür maskesi.
 - [ ] bolge_am'ı ayıda dene (geriye dönük kontrol).
+- [ ] İki aşamalı yöntemi gerçek görselle dene (önizleme 75 MP indexed PNG Photoshop'ta düzenleme hızı; Color Table ile renk değişimi; 2. aşamada artık piksel raporu).

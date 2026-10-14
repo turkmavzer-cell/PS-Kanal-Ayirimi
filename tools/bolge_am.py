@@ -2,7 +2,8 @@
 """Bolge saflikli AM tram ayrimi. Plan: docs/plan-bolge-safligi.md
 Kullanim: python3 tools/bolge_am.py girdi.png cikti_klasoru N_acik [N_koyu_renk]
   N_acik: acik tisort renk sayisi; N_koyu_renk: koyu tisortte fon HARIC renk sayisi (verilmezse koyu set uretilmez)
-Env: FIGUR=figur_maske.png (koyu tiste kagit beyazi ile figur beyazini ayirir; yoksa figur = kagit olmayan her yer)
+Env: ASAMA=tek|onizleme (onizleme = iki asamali yontem 1. asama; bkz. docs/is-akisi-tek-ve-iki-asama.md)
+     FIGUR=figur_maske.png (koyu tiste kagit beyazi ile figur beyazini ayirir; yoksa figur = kagit olmayan her yer)
      PPI(508) LPI(45) ANG(15) DMIN(0.03) MINC(0.10) MINPX(4) CHOKE_PX(4) SHIRT(30,30,30 onizleme)
 Ilke: her pikselin renk ailesi (ton) yumusatilmis kaynaktan bulunur; piksel yalniz kendi ailesinin murekkepleriyle
 karisir. En koyu murekkep baska ailede yalniz cizgi/kontur maskesinde kullanilir. Duz bolgeler sabit tonda tutulur.
@@ -22,7 +23,8 @@ E = os.environ.get
 PPI = int(E('PPI', 508)); LPI = float(E('LPI', 45)); ANG = float(E('ANG', 15))
 DMIN = float(E('DMIN', 0.03)); MINC = float(E('MINC', 0.10)); MINPX = int(E('MINPX', 4)); CHOKE = int(E('CHOKE_PX', 4))
 SHIRT = np.array([int(x) for x in E('SHIRT', '30,30,30').split(',')], np.uint8)
-FIGUR = E('FIGUR')
+FIGUR = E('FIGUR'); os.makedirs(out_dir, exist_ok=True)
+ASAMA = E('ASAMA', 'tek')   # 'tek': filmleri dogrudan uret; 'onizleme': iki asamali yontemin 1. asamasi, yalniz indeksli onizleme PNG (film yok)
 PAIR_PEN = float(E('PAIR_PEN', 0.0)); IDX_MED = int(E('IDX_MED', 41)); REV_E = float(E('REV_E', 0.003)); REFINE = int(E('REFINE', 2)); MINW = int(E('MINW', 3))
 
 lin = lambda c: np.where(c <= 0.04045, c/12.92, ((c+0.055)/1.055)**2.4)
@@ -306,7 +308,12 @@ def clean(m):
     if small_[1:].any(): m[small_[lb]] = False
     return m
 
-def save(mask, path): Image.frombytes('1', (W, H), np.packbits(~mask, axis=1).tobytes()).save(path, dpi=(PPI, PPI), compress_level=6)
+def save_p(pidx, pal, path):
+    im = Image.fromarray(pidx, 'P'); flat_ = [v for c in pal for v in c]; im.putpalette(flat_+[0]*(768-len(flat_)))
+    im.save(path, dpi=(PPI, PPI), compress_level=6)
+def save(mask, path):
+    if ASAMA == 'onizleme': return                         # 1. asamada film yazilmaz
+    Image.frombytes('1', (W, H), np.packbits(~mask, axis=1).tobytes()).save(path, dpi=(PPI, PPI), compress_level=6)
 
 meta = {'W': W, 'H': H, 'ppi': PPI, 'lpi': LPI, 'aci': ANG, 'sets': {}}
 used = set()
@@ -320,13 +327,17 @@ I1, I2, C1, C2 = finalize(inks, i1, i2, c1, c2, region_acik); del i1, i2, c1, c2
 idx, _ = screen(I1, I2, C1, C2, len(inks)); log('acik: tram bitti')
 rgbi = np.clip(np.round(dlin(inks)*255), 0, 255).astype(int)
 order = np.argsort(-tolab(dlin(inks))[:, 0])               # baski sirasi: acik -> koyu
-d = os.path.join(out_dir, 'Acik_Tisort'); os.makedirs(d, exist_ok=True)
-sets = []; prev = np.full((H, W, 3), 255, np.uint8)
+d = os.path.join(out_dir, 'Acik_Tisort'); (os.makedirs(d, exist_ok=True) if ASAMA != 'onizleme' else None)
+sets = []; prev = np.full((H, W, 3), 255, np.uint8); pidx = np.zeros((H, W), np.uint8); ppal = [[255, 255, 255]]
 for n_, k in enumerate(order):
     m = clean(idx == k+1); ad = auto_ad(rgbi[k], used)
     fn = f'{n_+1:02d}_{ad}.png'; save(m, os.path.join(d, fn)); sets.append([f'{n_+1:02d} {ad}', fn, rgbi[k].tolist()])
-    prev[m] = rgbi[k]; log('  acik kaydedildi', fn, 'kapsama %', round(100*m.mean(), 2))
+    prev[m] = rgbi[k]; pidx[m] = n_+1; ppal.append(rgbi[k].tolist()); log('  acik', fn, 'kapsama %', round(100*m.mean(), 2))
 meta['sets']['Acik_Tisort'] = sets
+if ASAMA == 'onizleme':
+    save_p(pidx, ppal, os.path.join(out_dir, 'Onizleme_Acik_Tisort.png'))
+    meta.setdefault('onizleme', {})['Acik_Tisort'] = {'dosya': 'Onizleme_Acik_Tisort.png', 'tisort_rgb': [255, 255, 255], 'murekkepler': sets}
+del pidx
 Image.fromarray(prev).save(os.path.join(out_dir, 'onizleme_acik_indeks.png'))
 np.save(os.path.join(out_dir, '_aile.npy'), fam.astype(np.int8)); np.save(os.path.join(out_dir, '_cizgi.npy'), line)
 del idx, prev
@@ -363,17 +374,27 @@ if N_KOYU:
     band = (solid > 0) & (er == 0); fon[band] = False; del solid, er, band
     fon = clean(fon)
     rgbk = np.clip(np.round(dlin(inks_k)*255), 0, 255).astype(int)
-    d = os.path.join(out_dir, 'Koyu_Tisort'); os.makedirs(d, exist_ok=True)
+    d = os.path.join(out_dir, 'Koyu_Tisort'); (os.makedirs(d, exist_ok=True) if ASAMA != 'onizleme' else None)
     sets = [['01 Fon_Beyaz', '01_Fon_Beyaz.png', [255, 255, 255]]]; save(fon, os.path.join(d, '01_Fon_Beyaz.png'))
-    log('  koyu kaydedildi 01_Fon_Beyaz.png kapsama %', round(100*fon.mean(), 2))
+    log('  koyu 01_Fon_Beyaz.png kapsama %', round(100*fon.mean(), 2))
     prev = np.full((H, W, 3), SHIRT, np.uint8); prev[fon] = 255
+    pidx = np.zeros((H, W), np.uint8); pidx[fon] = 1; ppal = [SHIRT.tolist(), [255, 255, 255]]
     ordk = np.argsort(-lumk)
     for n_, k in enumerate(ordk):
         m = clean(idx == k+1); ad = auto_ad(rgbk[k], used_k)
         fn = f'{n_+2:02d}_{ad}.png'; save(m, os.path.join(d, fn)); sets.append([f'{n_+2:02d} {ad}', fn, rgbk[k].tolist()])
-        prev[m] = rgbk[k]; log('  koyu kaydedildi', fn, 'kapsama %', round(100*m.mean(), 2))
+        prev[m] = rgbk[k]; pidx[m] = n_+2; ppal.append(rgbk[k].tolist()); log('  koyu', fn, 'kapsama %', round(100*m.mean(), 2))
     meta['sets']['Koyu_Tisort'] = sets
+    if ASAMA == 'onizleme':
+        save_p(pidx, ppal, os.path.join(out_dir, 'Onizleme_Koyu_Tisort.png'))
+        meta.setdefault('onizleme', {})['Koyu_Tisort'] = {'dosya': 'Onizleme_Koyu_Tisort.png', 'tisort_rgb': SHIRT.tolist(), 'fon_rgb': [255, 255, 255], 'murekkepler': sets[1:]}
+    del pidx
     meta['koyu_tisort_onizleme_rengi'] = SHIRT.tolist()
     Image.fromarray(prev).save(os.path.join(out_dir, 'onizleme_koyu_indeks.png'))
-json.dump(meta, open(os.path.join(out_dir, 'kanallar_hibrit.json'), 'w'), ensure_ascii=False, indent=1)
+if ASAMA == 'onizleme':
+    meta.pop('sets', None)
+    json.dump(meta, open(os.path.join(out_dir, 'onizleme_palet.json'), 'w'), ensure_ascii=False, indent=1)
+    log('1. ASAMA bitti: Onizleme_*.png dosyalarini Photoshop\'ta duzenleyip onaylayin; 2. asama: tools/onizlemeden_ayir.py')
+else:
+    json.dump(meta, open(os.path.join(out_dir, 'kanallar_hibrit.json'), 'w'), ensure_ascii=False, indent=1)
 log('bitti')
