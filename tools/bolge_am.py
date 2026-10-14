@@ -4,6 +4,7 @@ Kullanim: python3 tools/bolge_am.py girdi.png cikti_klasoru N_acik [N_koyu_renk]
   N_acik: acik tisort renk sayisi; N_koyu_renk: koyu tisortte fon HARIC renk sayisi (verilmezse koyu set uretilmez)
 Env: ASAMA=tek|onizleme (onizleme = iki asamali yontem 1. asama; bkz. docs/is-akisi-tek-ve-iki-asama.md)
      FIGUR=figur_maske.png (koyu tiste kagit beyazi ile figur beyazini ayirir; yoksa figur = kagit olmayan her yer)
+     LAP=1 (tramli renklerin altinda tam kaplayan duz taban 'lap'; LAP_TOL=0,25 LAP_ABS=0,0004; yalniz 1. asama onizleme/tek asama gorunumu, film ust uste basimi henuz yok)
      PPI(508) LPI(45) ANG(15) DMIN(0.03) MINC(0.10) MINPX(4) CHOKE_PX(4) SHIRT(30,30,30 onizleme)
 Ilke: her pikselin renk ailesi (ton) yumusatilmis kaynaktan bulunur; piksel yalniz kendi ailesinin murekkepleriyle
 karisir. En koyu murekkep baska ailede yalniz cizgi/kontur maskesinde kullanilir. Duz bolgeler sabit tonda tutulur.
@@ -26,6 +27,7 @@ SHIRT = np.array([int(x) for x in E('SHIRT', '30,30,30').split(',')], np.uint8)
 FIGUR = E('FIGUR'); os.makedirs(out_dir, exist_ok=True)
 ASAMA = E('ASAMA', 'tek')   # 'tek': filmleri dogrudan uret; 'onizleme': iki asamali yontemin 1. asamasi, yalniz indeksli onizleme PNG (film yok)
 PAIR_PEN = float(E('PAIR_PEN', 0.0)); IDX_MED = int(E('IDX_MED', 41)); REV_E = float(E('REV_E', 0.003)); REFINE = int(E('REFINE', 2)); MINW = int(E('MINW', 3))
+LAP = int(E('LAP', 0)); LAP_TOL = float(E('LAP_TOL', 1.0)); LAP_ABS = float(E('LAP_ABS', 0.003)); LAP_MINB = float(E('LAP_MINB', 0.85))   # LAP=1: 'lap' (tam kaplayan duz taban) - atolye, 2026-10-14: tramli renklerin altinda duz taban renk
 
 lin = lambda c: np.where(c <= 0.04045, c/12.92, ((c+0.055)/1.055)**2.4)
 dlin = lambda c: np.where(c <= 0.0031308, c*12.92, 1.055*np.clip(c, 0, None)**(1/2.4)-0.055)
@@ -168,9 +170,33 @@ def fit(inks, ifam, dark_fam, region, chunk=256):
             Er = np.where(ok, Er, 1e9)
             if a != b: Er = Er + PAIR_PEN                     # sadelik: tek murekkep tonu tercih (ten/gok gibi yumusak alanda benekli gecis olmaz)
             m = Er < best; best[m] = Er[m]; bi[m] = a; bj[m] = b; bx[m] = x[m]; by[m] = y[m]
+        if LAP:                                                  # lap: kagit gorunmez; taban murekkep %100 (duz), ustte koyu murekkep nokta (x+y=1)
+            bf = np.full(P.shape[:2], 1e9, np.float32)
+            fi = np.zeros(P.shape[:2], np.uint8); fj = np.zeros(P.shape[:2], np.uint8)
+            fx = np.zeros(P.shape[:2], np.float32); fy = np.zeros(P.shape[:2], np.float32)
+            nrm = (D**2).sum(1)
+            for a in range(n):                                   # tek murekkep %100 (duz): piksel o murekkepten en az LAP_MINB kadar koyu olmali
+                prj = (P@D[a])/max(float(nrm[a]), 1e-9)
+                Er = np.where(al[a] & (prj >= LAP_MINB), ((D[a]-P)**2).sum(-1), 1e9)
+                m = Er < bf; bf[m] = Er[m]; fi[m] = a; fj[m] = a; fx[m] = 1.0; fy[m] = 0.0
+            for a in range(n):
+                for b in range(a+1, n):
+                    ok = al[a] & al[b]
+                    if not ok.any(): continue
+                    dk, lt = (a, b) if nrm[a] >= nrm[b] else (b, a)   # dk: koyu (nokta), lt: acik (duz taban)
+                    prj = (P@D[lt])/max(float(nrm[lt]), 1e-9)
+                    ok = ok & (prj >= LAP_MINB)                       # taban murekkepten daha acik pikselde lap yok (kagit kalir)
+                    if not ok.any(): continue
+                    dd = D[dk]-D[lt]; xl = np.clip(((P-D[lt])@dd)/max(float(dd@dd), 1e-9), 0, 1)
+                    Er = ((xl[..., None]*D[dk]+(1-xl)[..., None]*D[lt]-P)**2).sum(-1) + PAIR_PEN
+                    Er = np.where(ok, Er, 1e9)
+                    m = Er < bf; bf[m] = Er[m]; fi[m] = dk; fj[m] = lt; fx[m] = xl[m]; fy[m] = 1-xl[m]
+            use = bf <= best*(1+LAP_TOL)+LAP_ABS                  # lap neredeyse ayni hatayla cozuyorsa lap tercih edilir
+            bi = np.where(use, fi, bi); bj = np.where(use, fj, bj); bx = np.where(use, fx, bx); by = np.where(use, fy, by)
         i1[r0:r0+chunk] = bi; i2[r0:r0+chunk] = bj; c1[r0:r0+chunk] = bx; c2[r0:r0+chunk] = by
     rg = region
     c1[~rg] = 0; c2[~rg] = 0
+    if LAP: log('  lap (fit): kagitsiz piksel % (bolge ici)', round(100*float((((c1+c2) >= 0.999) & rg).sum()/max(rg.sum(), 1)), 1))
     return i1, i2, c1, c2
 
 
@@ -215,6 +241,7 @@ def finalize(inks, i1, i2, c1, c2, region):
     lum = tolab(dlin(inks))[:, 0]; n = len(inks); D = 1.0-inks
     a_ = np.minimum(i1, i2).astype(np.int16); b_ = np.maximum(i1, i2).astype(np.int16)
     code = a_*16+b_; code[(c1+c2) < 1e-4] = 255
+    lapm0 = ((c1+c2) >= 0.999) & region if LAP else np.zeros(code.shape, bool)    # kagitsiz (lap) pikseller
     fe = np.zeros(fam.shape, np.uint8)                      # aile sinirlari: oylama disi
     fe[:, 1:] |= (fam[:, 1:] != fam[:, :-1]); fe[1:, :] |= (fam[1:, :] != fam[:-1, :])
     fe = cv2.dilate(fe, np.ones((IDX_MED, IDX_MED), np.uint8)).astype(bool)
@@ -241,6 +268,13 @@ def finalize(inks, i1, i2, c1, c2, region):
             M = np.linalg.pinv(np.stack([D[a], D[b]], 1)); xy = P@M.T
             x = np.clip(xy[:, 0], 0, 1); y = np.clip(xy[:, 1], 0, 1)
             ssum = x+y; ov = ssum > 1; x = np.where(ov, x/np.maximum(ssum, 1e-6), x); y = np.where(ov, y/np.maximum(ssum, 1e-6), y)
+        if LAP:
+            lp = lapm0[m]
+            if lp.any():                                        # lap pikselde cift degisse bile x+y=1 kisitiyla coz
+                if a == b: x = np.where(lp, 1.0, x); y = np.where(lp, 0.0, y)
+                else:
+                    dd = D[a]-D[b]; xl = np.clip(((P-D[b])@dd)/max(float(dd@dd), 1e-9), 0, 1)
+                    x = np.where(lp, xl, x); y = np.where(lp, 1-xl, y)
         # koyu olan nokta cekirdegi
         if lum[a] <= lum[b]: I1[m], I2[m], C1[m], C2[m] = a, b, x, y
         else: I1[m], I2[m], C1[m], C2[m] = b, a, y, x
@@ -261,6 +295,8 @@ def finalize(inks, i1, i2, c1, c2, region):
     # dolu (tramsiz) yapma: yalniz yumusak ton alani DISINDA; ten gibi alanda kati yama ile noktali alan yan yana gelmez
     tt = C1+C2; full = (tt > 1-DMIN) & ~tone; k = np.where(full, 1/np.maximum(tt, 1e-6), 1); C1 *= k; C2 *= k
     C1 = np.minimum(C1, np.where(tone, 0.96, 1.0)); C2 = np.minimum(C2, np.where(tone, np.maximum(0.96-C1, 0), 1.0))
+    if LAP: log('  lap (finalize): kagitsiz piksel % (bolge ici)', round(100*float(lapm0.sum()/max(region.sum(), 1)), 1))
+    if LAP: C2 = np.where(lapm0, 1.0-C1, C2)                # lap: taban tam kaplar (tonda %96 sinirini asar; kagit benegi olmaz)
     return I1, I2, C1, C2
 
 # ---------------- 6) ekran ----------------
@@ -283,7 +319,8 @@ def screen(I1, I2, C1, C2, n, U=None):
         if U is not None:
             u = up(U); a1 = a1*u; a2 = a2*u
             fon[r0:r1] = T < u
-        idx[r0:r1] = np.where(T < a1, I1[Y0][:, X0]+1, np.where(T < a1+a2, I2[Y0][:, X0]+1, 0))
+        tt_ = a1+a2; tt_ = tt_+(tt_ > 0.999)*0.01 if LAP else tt_
+        idx[r0:r1] = np.where(T < a1, I1[Y0][:, X0]+1, np.where(T < tt_, I2[Y0][:, X0]+1, 0))
     return idx, fon
 
 def auto_ad(rgb, used):

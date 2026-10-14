@@ -52,3 +52,6 @@
 - [ ] İki aşamalı yöntemi gerçek görselle dene (önizleme 75 MP indexed PNG Photoshop'ta düzenleme hızı; Color Table ile renk değişimi; 2. aşamada artık piksel raporu).
 
 - [ ] Kız kişisi v9.1: önizleme (İndirilenler\Emprime_Kiz_Onizleme) kullanıcı onayı bekleniyor; onaydan sonra `onizlemeden_ayir.py ... acik onizleme_palet.json`, kalite kontrol, PSD. Elbise bölgesinde izole koyu nokta/yüzde beyaz nokta temizliği (MINPX) değerlendirilebilir.
+
+- [ ] "Lap" tam olarak ne demek? (Erkut'a sor: düz taban + tram mı, üst üste baskı mı?) Cevaba göre film aşamasında taban filmi altlığı uygulanacak.
+- [ ] LAP=1 önizlemesi onaylanırsa `onizlemeden_ayir.py`'de taban + nokta üst üste (overprint) desteği.

@@ -171,3 +171,10 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Değişiklik: rozet maskesi `Fo8` (ham kaynak) + `al ≥ 0,5`; `FLAT_R` (varsayılan 1,0) açma+medyan; rozet mürekkebi dE uyarısı; `BADGE_INK_OWN`; json'a `duz_bolgeler` ve `uyarilar`.
 - Kırpma testi (mevcut ayı rozet filmi): açma r=2 ardından medyan 9 → çıkıntılar gitti, harf/halka bozulmadı, alan değişimi %0,1.
 - `kalite_kontrol.py`: düz bölge kenar pürüzlülüğü + renk dE; eski çıktıda rozet 0,070 / dE 19 uyarı verdi, lacivert 0,006 / dE 0 temiz.
+
+## 2026-10-14 — Kız, "lap" önizlemesi (bolge_am.py LAP=1)
+- Amaç: Erkut'un "altlarında da lap renkleri olmalı" yorumu (tahminim: tramlı koyu noktaların altında düz taban mürekkep). Anlamı Erkut'tan doğrulanmadı.
+- Yöntem: `LAP=1 ASAMA=onizleme python3 tools/bolge_am.py kiz.png cikti 6`. Piksel, taban mürekkebe en az onun kadar koyuysa kâğıt yerine düz taban + üstte koyu nokta (LAP_TOL=1.0, LAP_ABS=0.003, LAP_MINB=0.85).
+- Sonuç: koyu yaprakta beyaz oranı 0,235 → 0,156; kâğıtsız piksel %73,4. Nokta kenarlarında küçük beyaz boşluklar kalıyor.
+- Yapılmadı: film aşamasında taban filminin noktaların altına uzanması (üst üste baskı); açık mor şekil için paletde mürekkep yok.
+- Önizleme: İndirilenler\Emprime_Kiz_Lap_Onizleme (yalnız 1. aşama, film yok).
