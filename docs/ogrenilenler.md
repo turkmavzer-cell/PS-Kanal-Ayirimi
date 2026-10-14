@@ -171,3 +171,9 @@ Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol ara
 - "En koyu mürekkep muaf" istisnası, tonu koyulaştırmak için kötüye kullanıldı (koyu kahvenin %14'ü turkuaz alanda) → en koyu mürekkep yalnızca çizgi/kontur maskesinde.
 - Düz alan (yerel std ≈2) piksel karışımıyla tramlanınca leke olur → düz bölge tek mürekkep/sabit ton, kâğıt dokusu önceden yumuşatılır.
 - Kök neden: piksel bazlı karışım bölgeyi bilmiyor. Plan: `docs/plan-bolge-safligi.md`.
+
+## İp/solucan çapak ve ten lekesi (kız v8 geri bildirimi, 2026-10-14)
+- Göreli koyuluk (black-hat) "çizgi" ölçüsü olarak kullanılmaz: suluboya renkli şekillerin koyu kenar şeridi çizgi sanılır ve en koyu mürekkep ince çapak üretir. Çizgi = mutlak koyu (L<38) + düşük kroma.
+- Basılamayacak inceliği (MINW, 3 px @508 PPI ≈ 0,15 mm) filmden sil: ince ip gibi parçalar baskıda zaten tutunmaz, ekranda çapak görünür.
+- Ten gibi yumuşak alanda piksel bazlı mürekkep çifti seçimi yama yapar; çift bölge çapında sabitlenmeli ve kaplama o çift için yeniden çözülmeli. Yumuşak alanda %100 dolu yama noktalı alanın yanına gelmemeli.
+- Çil gibi küçük ayrıntılar yumuşatmadan ve oylamadan korunmalı (yumuşatılmamış kaynak + hata artarsa geri dön).

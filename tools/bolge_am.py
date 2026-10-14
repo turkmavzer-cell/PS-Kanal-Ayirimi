@@ -23,6 +23,7 @@ PPI = int(E('PPI', 508)); LPI = float(E('LPI', 45)); ANG = float(E('ANG', 15))
 DMIN = float(E('DMIN', 0.03)); MINC = float(E('MINC', 0.10)); MINPX = int(E('MINPX', 4)); CHOKE = int(E('CHOKE_PX', 4))
 SHIRT = np.array([int(x) for x in E('SHIRT', '30,30,30').split(',')], np.uint8)
 FIGUR = E('FIGUR')
+PAIR_PEN = float(E('PAIR_PEN', 0.0)); IDX_MED = int(E('IDX_MED', 41)); REV_E = float(E('REV_E', 0.003)); REFINE = int(E('REFINE', 2)); MINW = int(E('MINW', 3))
 
 lin = lambda c: np.where(c <= 0.04045, c/12.92, ((c+0.055)/1.055)**2.4)
 dlin = lambda c: np.where(c <= 0.0031308, c*12.92, 1.055*np.clip(c, 0, None)**(1/2.4)-0.055)
@@ -38,6 +39,8 @@ h2, w2 = H//2, W//2
 small = np.clip(cv2.resize(src, (w2, h2), interpolation=cv2.INTER_AREA).astype(np.float32)/255/wp, 0, 1)
 del src
 # ---------------- 2) on temizlik: kenar koruyan yumusatma ----------------
+labr = tolab(small); mur = cv2.blur(labr, (5, 5))
+sd_raw = np.sqrt(np.maximum(cv2.blur(labr*labr, (5, 5))-mur*mur, 0).sum(2)); del labr, mur   # ayrinti (cil, kirpik) olcusu: yumusatma ONCESI
 s8 = (small*255+0.5).astype(np.uint8)
 for _ in range(2): s8 = cv2.bilateralFilter(s8, 9, 14, 5)
 sm = s8.astype(np.float32)/255; del s8
@@ -48,16 +51,18 @@ log('yumusatma bitti; kagit %', round(100*paper.mean(), 1))
 # cizgi/kontur maskesi: ince koyu yapi (black-hat) ya da cok koyu
 L8 = np.clip(Lc*2.55, 0, 255).astype(np.uint8)
 bh = cv2.morphologyEx(L8, cv2.MORPH_BLACKHAT, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15)))
-line = ((bh > 26) & (Lc < 60)) | ((Lc < 45) & (C < 25))     # ince koyu cizgi + koyu dolu sekil (cicek ici, kirpik)
+LINE_L = float(E('LINE_L', 38))
+line = (Lc < LINE_L) & (C < 25)          # yalniz gercek koyu cizgi/dolu sekil; renkli seklin koyu kenar seridi (L 45-60) cizgi DEGIL -> ip/solucan capak olusmaz
 line = cv2.dilate(line.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
 log('cizgi maskesi %', round(100*line.mean(), 2))
 # duz bolge: yerel std kucuk
 mu = cv2.blur(lab, (7, 7)); sd = np.sqrt(np.maximum(cv2.blur(lab*lab, (7, 7))-mu*mu, 0).sum(2))
-flat = (sd < 1.5) & ~paper & ~line
+flat = (sd < 1.5) & (sd_raw < 4) & ~paper & ~line
 log('duz bolge %', round(100*flat.mean(), 1))
 
 # ---------------- 3) renk aileleri (ton tepeleri) ----------------
-chrom = (C >= 6) & ~paper
+FAM_C = float(E('FAM_C', 6))
+chrom = (C >= FAM_C) & ~paper
 hist, _ = np.histogram(HU[chrom], bins=72, range=(0, 360), weights=C[chrom])
 hs = np.convolve(np.concatenate([hist[-3:], hist, hist[:3]]), np.ones(5)/5, 'same')[3:-3]
 peaks = [i for i in range(72) if hs[i] >= hs[i-1] and hs[i] >= hs[(i+1) % 72] and hs[i] > 0]
@@ -88,6 +93,9 @@ for f in range(NF): log(f'  aile {f} ({cent[f]:.0f} derece): alan %', round(100*
 
 # ---------------- 4) palet: en koyu (cizgi) + ailelere acgozlu dagitim ----------------
 Lsm = lin(sm)
+detail = cv2.dilate((sd_raw >= 6).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool) & ~paper
+Lsm[detail] = lin(small)[detail]                           # ayrintida (cil, kirpik) yumusatilmamis kaynak: kucuk koyu noktalar kaybolmasin
+log('ayrinti (yumusatma uygulanmayan) %', round(100*detail.mean(), 1))
 def palette(ncol, region):
     """region: piksel maskesi (basilacak alan). donus: inks (dogrusal RGB), ink_fam"""
     rs = np.random.RandomState(0)
@@ -156,27 +164,101 @@ def fit(inks, ifam, dark_fam, region, chunk=256):
                 s = x+y; ov = s > 1; x = np.where(ov, x/np.maximum(s, 1e-6), x); y = np.where(ov, y/np.maximum(s, 1e-6), y)
             Er = ((x[..., None]*D[a]+y[..., None]*D[b]-P)**2).sum(-1)
             Er = np.where(ok, Er, 1e9)
+            if a != b: Er = Er + PAIR_PEN                     # sadelik: tek murekkep tonu tercih (ten/gok gibi yumusak alanda benekli gecis olmaz)
             m = Er < best; best[m] = Er[m]; bi[m] = a; bj[m] = b; bx[m] = x[m]; by[m] = y[m]
         i1[r0:r0+chunk] = bi; i2[r0:r0+chunk] = bj; c1[r0:r0+chunk] = bx; c2[r0:r0+chunk] = by
     rg = region
     c1[~rg] = 0; c2[~rg] = 0
     return i1, i2, c1, c2
 
-def finalize(inks, i1, i2, c1, c2):
-    lum = tolab(dlin(inks))[:, 0]
-    # koyu olan nokta cekirdegi
+
+def refine(inks, ifam, dfam, region, i1, i2, c1, c2, iters):
+    """en az kullanilan (en koyu olmayan) murekkebi, en kotu temsil edilen piksellerin rengiyle degistir; hata dusuyorsa kabul et.
+    Ornek: ten rengi palette yoksa ten sari+bej noktasiyla turuncu cikar -> ten murekkebi eklenir."""
+    D = 1.0-inks; Psr = dlin(Lsm)
+    def err(i1, i2, c1, c2, D):                              # algisal (sRGB) hata: koyu/acik tonlar dengeli agirlik alir
+        rec = dlin(np.clip(1.0-(c1[..., None]*D[i1]+c2[..., None]*D[i2]), 0, 1))
+        Ee = ((rec-Psr)**2).sum(-1); Ee[~region] = 0; return Ee
+    Ecur = err(i1, i2, c1, c2, D); base = float(Ecur[region].mean()); korunan = set()
+    for it in range(iters):
+        use = np.array([c1[i1 == k].sum()+c2[i2 == k].sum() for k in range(len(inks))])
+        cand = [k for k in range(len(inks)) if ifam[k] != -2 and k not in korunan]
+        if not cand: break
+        kmin = min(cand, key=lambda k: use[k])
+        bad = region & ~line & ~paper
+        thr = np.percentile(Ecur[bad], 97)
+        sel = bad & (Ecur >= thr)
+        if sel.sum() < 500: break
+        fsel = fam[sel]; fsel = fsel[fsel >= 0]
+        if len(fsel) == 0: break
+        fnew = int(np.bincount(fsel).argmax())
+        sel &= (fam == fnew)
+        # yuksek hatali pikseller tisort/kagida cok yakin degilse: renklerinin ortalamasi yeni murekkep
+        newc = Lsm[sel].mean(0)
+        nl_ = tolab(dlin(newc[None]))[0]; el = tolab(dlin(inks))
+        if np.min(np.linalg.norm(el-nl_, axis=1)) < 12:   # mevcut murekkebe cok yakin: yeni renk kazandirmaz
+            log('  palet iyilestirme: yeni renk mevcut murekkebe cok yakin, durduruldu'); break
+        inks2 = inks.copy(); inks2[kmin] = newc; ifam2 = ifam.copy(); ifam2[kmin] = fnew
+        j1, j2, d1, d2 = fit(inks2, ifam2, dfam, region)
+        E2 = err(j1, j2, d1, d2, 1.0-inks2); e2 = float(E2[region].mean())
+        log(f'  palet iyilestirme {it+1}: {kmin}. murekkep (kullanim {use[kmin]/use.sum()*100:.1f}%) -> aile {fnew} renk {np.round(dlin(newc)*255).astype(int).tolist()}; hata {base:.5f} -> {e2:.5f}')
+        if e2 < base*0.97:
+            inks, ifam, i1, i2, c1, c2, Ecur, base = inks2, ifam2, j1, j2, d1, d2, E2, e2; korunan.add(kmin)
+        else: break
+    return inks, ifam, i1, i2, c1, c2
+
+def finalize(inks, i1, i2, c1, c2, region):
+    """yumusak ton alaninda murekkep ciftini bolge capinda sabitle (cogunluk oyu), kaplamayi o cift icin yeniden coz.
+    Boylece ten/gok gibi yumusak gecislerde cift degisiminden dogan yamali (leke) gorunum olusmaz."""
+    lum = tolab(dlin(inks))[:, 0]; n = len(inks); D = 1.0-inks
+    a_ = np.minimum(i1, i2).astype(np.int16); b_ = np.maximum(i1, i2).astype(np.int16)
+    code = a_*16+b_; code[(c1+c2) < 1e-4] = 255
+    fe = np.zeros(fam.shape, np.uint8)                      # aile sinirlari: oylama disi
+    fe[:, 1:] |= (fam[:, 1:] != fam[:, :-1]); fe[1:, :] |= (fam[1:, :] != fam[:-1, :])
+    fe = cv2.dilate(fe, np.ones((IDX_MED, IDX_MED), np.uint8)).astype(bool)
+    tone = region & ~line & (sd < 4.0) & (cv2.dilate((sd_raw >= 6).astype(np.uint8), np.ones((5, 5), np.uint8)) == 0) & ~fe                # ayrinti (cil, kirpik) ve kenar disi yumusak alan
+    best = np.full(code.shape, -1.0, np.float32); mode = code.copy()
+    for k in np.unique(code[tone]):
+        cnt = cv2.boxFilter((code == k).astype(np.float32), -1, (IDX_MED, IDX_MED))
+        m = cnt > best; best[m] = cnt[m]; mode[m] = k
+    code0 = code.copy(); code = np.where(tone, mode, code)
+    # ozgun cozumun hatasi (oylamayla ayrinti kaybolursa geri donmek icin)
+    P0 = 1.0-Lsm
+    E0 = ((c1[..., None]*D[i1]+c2[..., None]*D[i2]-P0)**2).sum(-1)
+    I1 = np.zeros(code.shape, np.uint8); I2 = np.zeros(code.shape, np.uint8)
+    C1 = np.zeros(code.shape, np.float32); C2 = np.zeros(code.shape, np.float32)
+    for k in np.unique(code):
+        if k == 255: continue
+        a, b = int(k)//16, int(k) % 16
+        m = (code == k) & region
+        if not m.any(): continue
+        P = 1.0-Lsm[m]
+        if a == b:
+            x = np.clip((P@D[a])/float(D[a]@D[a]), 0, 1); y = np.zeros_like(x)
+        else:
+            M = np.linalg.pinv(np.stack([D[a], D[b]], 1)); xy = P@M.T
+            x = np.clip(xy[:, 0], 0, 1); y = np.clip(xy[:, 1], 0, 1)
+            ssum = x+y; ov = ssum > 1; x = np.where(ov, x/np.maximum(ssum, 1e-6), x); y = np.where(ov, y/np.maximum(ssum, 1e-6), y)
+        # koyu olan nokta cekirdegi
+        if lum[a] <= lum[b]: I1[m], I2[m], C1[m], C2[m] = a, b, x, y
+        else: I1[m], I2[m], C1[m], C2[m] = b, a, y, x
+    E1 = ((C1[..., None]*D[I1]+C2[..., None]*D[I2]-P0)**2).sum(-1)
+    rev = (code != code0) & (E1 > E0+REV_E)                 # cil/ince ayrinti: oylama bozduysa ozgun cifte don
     sw = lum[i1] > lum[i2]
-    I1 = np.where(sw, i2, i1); I2 = np.where(sw, i1, i2); C1 = np.where(sw, c2, c1); C2 = np.where(sw, c1, c2)
+    I1[rev] = np.where(sw, i2, i1)[rev]; I2[rev] = np.where(sw, i1, i2)[rev]
+    C1[rev] = np.where(sw, c2, c1)[rev]; C2[rev] = np.where(sw, c1, c2)[rev]
+    tone = tone & ~rev
+    log('  ton oylamasi: degisen %', round(100*((code != code0) & ~rev).mean(), 1), '| ayrinti icin geri donen %', round(100*rev.mean(), 2))
+    del P0, E0, E1
     darkest = int(np.argmin(lum))
     C1 = np.where(C1 < np.where(I1 == darkest, DMIN, MINC), 0, C1); C2 = np.where(C2 < np.where(I2 == darkest, DMIN, MINC), 0, C2)
-    # duz bolgelerde gurultusuz sabit ton: indeks medyan, kaplama normalize bulanik
-    for arr in (I1, I2):
-        md = cv2.medianBlur(arr.astype(np.uint8), 5); arr[flat] = md[flat]
-    for arr in (C1, C2):
-        wgt = flat.astype(np.float32)
-        num = cv2.GaussianBlur(arr*wgt, (0, 0), 3); den = cv2.GaussianBlur(wgt, (0, 0), 3)
-        sm_ = np.where(den > 1e-3, num/np.maximum(den, 1e-3), arr); arr[flat] = sm_[flat]
-    tt = C1+C2; full = tt > 1-DMIN; k = np.where(full, 1/np.maximum(tt, 1e-6), 1); C1 *= k; C2 *= k
+    for arr, sg, msk in ((C1, 3, flat), (C2, 3, flat), (C1, 2, tone), (C2, 2, tone)):   # duz ve yumusak alanda gurultusuz ton
+        wgt = msk.astype(np.float32)
+        num = cv2.GaussianBlur(arr*wgt, (0, 0), sg); den = cv2.GaussianBlur(wgt, (0, 0), sg)
+        sm_ = np.where(den > 1e-3, num/np.maximum(den, 1e-3), arr); arr[msk] = sm_[msk]
+    # dolu (tramsiz) yapma: yalniz yumusak ton alani DISINDA; ten gibi alanda kati yama ile noktali alan yan yana gelmez
+    tt = C1+C2; full = (tt > 1-DMIN) & ~tone; k = np.where(full, 1/np.maximum(tt, 1e-6), 1); C1 *= k; C2 *= k
+    C1 = np.minimum(C1, np.where(tone, 0.96, 1.0)); C2 = np.minimum(C2, np.where(tone, np.maximum(0.96-C1, 0), 1.0))
     return I1, I2, C1, C2
 
 # ---------------- 6) ekran ----------------
@@ -216,6 +298,9 @@ def auto_ad(rgb, used):
     used.add(ad); return ad
 
 def clean(m):
+    if MINW > 1:                                           # ip/solucan gibi ince capaklar: MINW px'ten ince her yapi silinir
+        op = cv2.morphologyEx(m.astype(np.uint8), cv2.MORPH_OPEN, np.ones((MINW, MINW), np.uint8)).astype(bool)
+        m = m & op
     nl, lb, st, _ = cv2.connectedComponentsWithStats(m.astype(np.uint8), connectivity=8)
     small_ = np.zeros(nl, bool); small_[1:] = st[1:, 4] < MINPX
     if small_[1:].any(): m[small_[lb]] = False
@@ -230,7 +315,8 @@ used = set()
 region_acik = ~paper
 inks, ifam, dfam = palette(N_ACIK, region_acik)
 i1, i2, c1, c2 = fit(inks, ifam, dfam, region_acik); log('acik: karisim bitti')
-I1, I2, C1, C2 = finalize(inks, i1, i2, c1, c2); del i1, i2, c1, c2
+inks, ifam, i1, i2, c1, c2 = refine(inks, ifam, dfam, region_acik, i1, i2, c1, c2, REFINE)
+I1, I2, C1, C2 = finalize(inks, i1, i2, c1, c2, region_acik); del i1, i2, c1, c2
 idx, _ = screen(I1, I2, C1, C2, len(inks)); log('acik: tram bitti')
 rgbi = np.clip(np.round(dlin(inks)*255), 0, 255).astype(int)
 order = np.argsort(-tolab(dlin(inks))[:, 0])               # baski sirasi: acik -> koyu
@@ -266,7 +352,8 @@ if N_KOYU:
     used_k = set()
     inks_k, ifam_k, dfam_k = palette(N_KOYU, region_k)
     i1, i2, c1, c2 = fit(inks_k, ifam_k, dfam_k, region_k); log('koyu: karisim bitti')
-    I1, I2, C1, C2 = finalize(inks_k, i1, i2, c1, c2); del i1, i2, c1, c2
+    inks_k, ifam_k, i1, i2, c1, c2 = refine(inks_k, ifam_k, dfam_k, region_k, i1, i2, c1, c2, REFINE)
+    I1, I2, C1, C2 = finalize(inks_k, i1, i2, c1, c2, region_k); del i1, i2, c1, c2
     idx, fon = screen(I1, I2, C1, C2, len(inks_k), U)
     lumk = tolab(dlin(inks_k))[:, 0]; dk = int(np.argmin(lumk))
     fon &= ~(idx == dk+1)                                   # en koyu murekkebin altina fon yok
