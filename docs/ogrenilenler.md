@@ -128,3 +128,12 @@ Tasarım: "Everything in life is art" (kaligrafi yazı + oymalı barok panel), a
 - Altlık "fon" iki sürümde (fon 1 / fon 2, ikincisi ≈%7 daha geniş → muhtemelen yayılmış/choke varyantı, kesin değil), kapsama %67–72, tek 2-seviye kanal; beyaz yazı alanları altlıktan boşaltılmış.
 - "siyah" adlı kanal tamamen dolu (tek değer) ve "beyaz -siyah" kanalı %4,8 kapsama (yazı alanı) → rolleri kesin değil.
 - Görsel: açık/orta renkli, suluboya tarzı; koyu tişört için tasarlanmış gibi (beyaz altlık + CMY).
+
+## Atölye geri bildirimi (WhatsApp, 2026-10-14) — ayıcık
+Kaynak: atölyeden Ömer Desinatör ve Serhat (kullanıcı aktardı, ekran görüntüsü). Atölyenin kendi sözleri, kesin kural değil, firmadan firmaya değişir.
+- Ömer'in ayrımı: 1 siyah (göz/burun), 2-3-4 kahve tonları, 5 "BE GENTLE" ovali, 6 lacivert, 7 fon; ayrıca Be Gentle yazı içi beyaz ise beyaz da eklenmeli → **toplam 8 renk**.
+- **Makine kapasitesi sınır koyar:** makine kafası az, en çok ~6 renk basılabilir; kurutmalar var, bazen kurutmalar iptal edilip 7-8 renge çıkılabiliyor. Kafa yetmezse kahveler bir azaltılır, mevcut renklerden bağlama (birleştirme) yapılır.
+- **Açık zemin (beyaz tişört) → fon yapılmaz**, kalıptan kurtarılır.
+- Serhat: 6 renge bile düşürebileceğini, 6 kafa basıyorsa söyledi.
+- Az renkte tasarım daha ince işlenir: pat boya kullanılır, kalıplar ince kalıba çekilir, "cam gibi" çıkar. Yazıları kabaran (kalın) desenler "kaba" kalır. Her desen tek kalıpta kurtarılmaz; kafa yetmezse renk iptal/azaltma istenir. Sonuç firmanın imalat kapasitesine bağlı.
+- Sonuç: bizim 9 film (8 ayıcık + lacivert) atölyenin 6-8 renk beklentisinin üstünde. Hedef mürekkep sayısı atölyenin kafa sayısından gelir; bunu sormadan tek doğru sayı yok.
