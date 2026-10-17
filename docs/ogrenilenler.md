@@ -196,3 +196,5 @@ Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol ara
 - Katmanlar üst üste binince orijinal çıkmalı; ölç ve raporla (fark ort/max, >6 piksel oranı).
 - Saydam geçiş: renk-alfa ayrıştırması (zemin ve desen rengi bilinirken) kullan; yarı saydam pikseli opak desen sayma.
 - psd-tools katman adlarında Türkçe karakter (ş, ğ, ı...) kullanma; MacRoman kodlaması hata verir.
+- [2026-10-17] Çok renkli motif deseninde katman seçenekleri: 2 (zemin+motif), 3 (zemin+çiçek+yaprak/dal), ~6 (zemin+renk aileleri+kontur), her motif ayrı. Kontur ayrı katmansa alttaki renk dolgusu konturun altında doldurulur (medyan). Renk ailesi ayrımı ton kesintisidir; geçişlerde leke olur, kullanıcıya söyle.
+- Büyük PSD (>30 MB) bilgisayara tek dosya yazılamaz: tam tuval PNG katmanları + `katman_birlestir.jsx` ile Photoshop'ta kur.

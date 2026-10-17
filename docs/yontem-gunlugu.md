@@ -191,3 +191,11 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Doğrulama: katmanlar birleşince orijinalden fark ort 0,8–1,0, piksellerin %0,2'si >6 (kenar/sıkıştırma gürültüsü). PSD yeniden okunup birleştirilerek ölçüldü.
 - Araç: `tools/katman/zemin_desen_katman.py girdi.png cikti.psd [--mod 2|3]` (2: Zemin+Desen; 3: Zemin+Desen opak+Geçiş saydam). Katman adları ASCII olmalı (psd-tools MacRoman, "ş" hata verir).
 - Çıktı: İndirilenler\Zigzag_Zemin_Desen.psd, Photoshop 2021'de açıldı (Photoshop 2026 bu bilgisayarda pencere vermedi).
+
+## 2026-10-17 — Katmanlara ayırma: çok renkli çiçek deseni (2250x2250, düz şeftali zemin)
+- Analiz: zemin düz (255,229,216), gürültü std ≈1,4; motif yaklaşık %50; dallar çiçeklere bitişik; sulu boya dokusu, ince koyu kontur, 7 renk ailesi; kenarlarda yarım çiçekler (tekrar deseni).
+- Seçenekler kullanıcıya sunuldu (2 / 3 / ~6 renk ailesi / her motif; kontur ayrı mı). Seçilen: Zemin + 4 renk ailesi + ayrı Kontur = 6 katman.
+- Araç: `tools/katman/motif_aile_katman.py girdi.png cikti.psd`. Kontur: yerel medyandan (9 px) koyu fark → alfa, Kp=(p−U(1−a))/a; zemin ayrımı: kenar bandında renk=(U−bg(1−a))/a; aile: HSV ton (pembe-kırmızı <14° / ≥330°, turuncu-sarı 14–50°, yeşil 50–165°, mavi-turkuaz 165–270°), one-hot Gauss + argmax.
+- İlk sürüm hatalıydı (birleşik fark %17 piksel >6): kontur alfası küçükken bölme gürültüyü büyüttü (a<0,25 → 0 yapıldı), kenar rengi en yakın iç pikselden alınmıştı (kesin çözümle değişti). Zeytin yeşili dallar turuncuya düşüyordu (yeşil sınırı 66°→50°).
+- Son ölçüm: birleşik-orijinal fark ort 0,69, >6 %2,9, >20 %0,6 (çoğu doku/kontur kenarı). Aile payları: pembe-kırmızı %23,7, turuncu-sarı %11,8, yeşil %9,6, mavi-turkuaz %4,5. Aile sınırları ton kesintisi: renk geçişlerinde (turuncu-kırmızı çiçek ortası) lekeli kalıyor.
+- Aktarım: psd-tools PSD'si 48 MB (ZIP) > 30 MB bilgisayara yazma sınırı → katmanlar tam tuval PNG + `katmanlar.json` + `tools/katman/katman_birlestir.jsx` olarak İndirilenler\Cicek_Katmanli'ya yazıldı; Photoshop'ta File > Scripts > Browse ile PSD kuruldu (22,5 MB, 6 katman). JSX'te katman taşımak için duplicate() (paste hizayı bozar).
