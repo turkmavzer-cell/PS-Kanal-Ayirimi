@@ -184,3 +184,10 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - Birleşik görüntü (açık→koyu) önizlemeyle birebir aynı (fark 0). kalite_kontrol `lap_altlik` işaretliyse film çakışması uyarısını atlar.
 - Altına taban uzayan koyu nokta oranı: Sarı %24, Turkuaz %26, Kahve %16, Koyu Kahve %70. Kapsama: Bej %13,8, Açık Mavi %17,7, Sarı %7,2, Turkuaz %16,8, Kahve %2,6, Koyu Kahve %4,3.
 - Çıktı: İndirilenler\Emprime_Kiz_LapAltlik_508 (filmler + PSD). Erkut onayı yok; atölye filminde gerçekten istenen bu mu, doğrulanmadı.
+
+## 2026-10-17 — Katmanlara ayırma: zigzag/üçgen doku (554x914, 72 PPI)
+- İstek: görseli katmanlara ayır, Photoshop'ta aç. İlk deneme yanlıştı: dikey zigzag şeritlerine bölündü (6 şerit katmanı; kullanıcı "hiç olmadı" dedi). Sebep: katman planı sorulduğunda "her şerit ayrı" seçeneğini kendim önermiştim; desenin doğal yapısı (zemin + üstte tek renk desen) analiz edilmeden şeritlere gidildi.
+- Doğru yöntem: zemin düz renk (35,36,38) ayrı katman; desen tek renk (≈255,23,73) ayrı katman, opaklığı düşen (karartma geçişi) yerlerde piksel alfası: `piksel = zemin·(1−a) + desen·a`, `a = <p−zemin, desen−zemin>/|desen−zemin|²` (en küçük kareler), a<0,02→0, a>0,98→1.
+- Doğrulama: katmanlar birleşince orijinalden fark ort 0,8–1,0, piksellerin %0,2'si >6 (kenar/sıkıştırma gürültüsü). PSD yeniden okunup birleştirilerek ölçüldü.
+- Araç: `tools/katman/zemin_desen_katman.py girdi.png cikti.psd [--mod 2|3]` (2: Zemin+Desen; 3: Zemin+Desen opak+Geçiş saydam). Katman adları ASCII olmalı (psd-tools MacRoman, "ş" hata verir).
+- Çıktı: İndirilenler\Zigzag_Zemin_Desen.psd, Photoshop 2021'de açıldı (Photoshop 2026 bu bilgisayarda pencere vermedi).

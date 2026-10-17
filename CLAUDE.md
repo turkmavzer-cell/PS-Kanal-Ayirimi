@@ -27,6 +27,9 @@ Bu repo, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı çalış
 ## İstek kapsamı
 - "Repoda güncelle / düzenle" = yalnızca kod ve doküman değişikliği + commit/push. Ayrım çalıştırma, kullanıcının bilgisayarına dosya yazma, Photoshop açma **yapılmaz**; kullanıcı ayrıca "işlem yap" demeden iş üretilmez.
 
+## Katmanlara ayırma işi (renk ayrımı dışı)
+Görseli katmanlara ayır istenirse: önce analiz et (`tools/katman/zemin_desen_katman.py` mantığı: zemin + tek renk desen + alfa geçişi), sonra **kaç katman istendiğini sor** ve seçenekleri görselin yapısına göre kendin belirleyip sun (ör. 2: Zemin+Desen; 3: Zemin+Desen opak+Geçiş saydam). Zemin + üstte desen ise varsayılan öneri 2 katman. Katmanlar üst üste binince orijinal çıkmalı (ölç). Katman adlarında Türkçe karakter kullanma.
+
 ## Çalışma şekli
 - Ağır hesap: `tools/tramsiz.py` (Python, numpy/opencv/Pillow). Photoshop aktarımı: `tools/photoshop/*.jsx` (önce `koyu_tisort_photoshop.jsx`, sonra `koyu_renk_duzelt.jsx`).
 - Yeni öğrenilen her şeyi, her denemeyi ilgili `docs/*.md` dosyasına işle; kod değişikliklerini commit + push et (kullanıcı bu repo için onay verdi).

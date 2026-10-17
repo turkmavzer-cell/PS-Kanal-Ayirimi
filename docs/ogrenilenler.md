@@ -188,3 +188,11 @@ Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol ara
 - Kural: düz (tramsız) bölgede kenar rengi bölmeyle büyütülmez; alfa kapısı her düz bölgede olmalı; düz bölgenin film rengi kaynaktan dE ≤ 12 olmalı, değilse ayrı mürekkep ya da paleti düzelt.
 - Kontrol: `kalite_kontrol.py` artık `kanallar_hibrit.json` içindeki `duz_bolgeler` için kenar pürüzlülüğü (eşik 0,03; çıkıntılı rozet 0,070, temiz yazı 0,006) ve renk dE ölçer. Eski ayı çıktısında iki hata da yakalandı.
 - Sınır: düzeltmenin `hibrit2.py` kısmı yalnız derleme ve film kırpması üzerinde açma+medyan denemesiyle sınandı; uçtan uca ayıda yeniden çalıştırılmadı (kullanıcı istemedi). Bir sonraki çalıştırmada kalite kontrolle doğrula.
+
+## Katmanlara ayırma (renk ayrımı dışı iş) — kural
+- [kullanıcı, 2026-10-17] Zemin + üstte desen yapısındaki görselde varsayılan **iki katman**: Zemin (düz) ve Desen (alfa ile saydam geçişli). Doğrulandı ("doğru oldu").
+- [kullanıcı, 2026-10-17] İşe başlamadan önce **kaç katman istendiği sorulur**; seçenekleri görseli analiz ettikten sonra **ben belirleyip sunarım**. Örnek (zigzag doku): ① Zemin + Desen (2) ② Zemin + Desen opak + Geçiş saydam (3) ③ yalnız zemin + tüm desen tek katman değilse şerit/öğe bazlı. Analizden önce soru sorma, analizden sonra seçenek sun.
+- Seçenek listesine yalnız görselin gerçek yapısına uyanları koy; doğal olmayan bölmeyi (ör. şeritler) öne çıkarma, "Önerilen" işaretini zemin/desen ayrımına ver.
+- Katmanlar üst üste binince orijinal çıkmalı; ölç ve raporla (fark ort/max, >6 piksel oranı).
+- Saydam geçiş: renk-alfa ayrıştırması (zemin ve desen rengi bilinirken) kullan; yarı saydam pikseli opak desen sayma.
+- psd-tools katman adlarında Türkçe karakter (ş, ğ, ı...) kullanma; MacRoman kodlaması hata verir.
