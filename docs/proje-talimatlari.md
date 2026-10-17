@@ -42,3 +42,5 @@ SÜREKLİ GELİŞTİRME:
 - Filmler: 1-bit PNG, siyah = mürekkep, 508 PPI (kullanıcı 2026-10-14: PSD yaparken 508), baskı sırasına göre numaralı, açık ve koyu tişört için ayrı klasör; kullanıcının İndirilenler klasörüne yaz.
 - İş bitince kısa özet ver: ne çıktı, bilinen sorunlar, bir sonraki adım. Adımları tek tek anlatma.
 ```
+
+KATMANLARA AYIRMA (renk ayrımı dışı iş): Önce görseli analiz et, sonra kaç katman istediğini sor; seçenekleri görselin yapısına göre kendin belirleyip sun. Zemin + üstte desen yapısında varsayılan öneri: Zemin + Desen (alfa ile saydam geçişli) = 2 katman; 3 katman seçeneği: Zemin + Desen opak + Geçiş saydam. Katmanlar üst üste binince orijinal çıkmalı. Araç: tools/katman/zemin_desen_katman.py.
