@@ -199,3 +199,10 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - İlk sürüm hatalıydı (birleşik fark %17 piksel >6): kontur alfası küçükken bölme gürültüyü büyüttü (a<0,25 → 0 yapıldı), kenar rengi en yakın iç pikselden alınmıştı (kesin çözümle değişti). Zeytin yeşili dallar turuncuya düşüyordu (yeşil sınırı 66°→50°).
 - Son ölçüm: birleşik-orijinal fark ort 0,69, >6 %2,9, >20 %0,6 (çoğu doku/kontur kenarı). Aile payları: pembe-kırmızı %23,7, turuncu-sarı %11,8, yeşil %9,6, mavi-turkuaz %4,5. Aile sınırları ton kesintisi: renk geçişlerinde (turuncu-kırmızı çiçek ortası) lekeli kalıyor.
 - Aktarım: psd-tools PSD'si 48 MB (ZIP) > 30 MB bilgisayara yazma sınırı → katmanlar tam tuval PNG + `katmanlar.json` + `tools/katman/katman_birlestir.jsx` olarak İndirilenler\Cicek_Katmanli'ya yazıldı; Photoshop'ta File > Scripts > Browse ile PSD kuruldu (22,5 MB, 6 katman). JSX'te katman taşımak için duplicate() (paste hizayı bozar).
+
+## 2026-10-19 — Katmanlara ayırma: sulu boya/leke deseni (E:\cihan\1 (9).tif, 736x736, düz olmayan kırık beyaz zemin)
+- Seçilen: 3 katman (Zemin + Bej yıkama + Gri-siyah leke). Araç: `tools/katman/renk_alfa_katman.py girdi cikti_klasoru [--sicak 12]`.
+- Yöntem: zemin = kanal başına %96 yüzdelik (246,247,241) düz katman; color-to-alpha (a = max_c (zemin_c−p_c)/zemin_c, C=(p−zemin(1−a))/a); aile = (R−B) sıcaklığı Gauss yumuşatılıp eşik (sıcak > eşik = bej).
+- Eşik 20 ile açık bej yıkamalar gri-siyah katmana düştü; 12 ile düzeldi (bej %46, gri-siyah %46). Birleşik-orijinal fark ort 0,14, >6 piksel %0,49.
+- Sınır: bej bölgelerin içine gömülü koyu mürekkep bej katmanda kalıyor (ton ayrımı değil, sıcaklık ayrımı).
+- Çıktı: E:\cihan\1 (9)_katmanlar (Katmanli.psd + 3 PNG).
