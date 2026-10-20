@@ -57,8 +57,8 @@
 - [ ] LAP=1 önizlemesi onaylanırsa `onizlemeden_ayir.py`'de taban + nokta üst üste (overprint) desteği.
 
 ## Eklenenler (20 Ekim) — bölge/mürekkep katmanları
-- [ ] `japon_katmanli.psd` Photoshop'ta açılıp grup/katman yapısı ve alfa gözle kontrol edilmedi (yalnız psd-tools ile okundu).
-- [ ] Teslim edilen PSD'nin adları Türkçe karakterli (kural ihlali). ASCII adlı sürüm üretilip İndirilenler'e yazılsın mı? (`bolge_murekkep_katman.py` hazır, sınandı.)
+- [x] `japon_katmanli.psd` kullanıcı tarafından açılıp kontrol edildi: "başarılı, katmanlar başarılı ayrıştırılmış" (2026-10-20).
+- [ ] Teslim edilen PSD'nin adları Türkçe karakterli; kullanıcı sonucu başarılı buldu, ASCII sürüm istemedi. Kural (ASCII ad) geçerli kalır; bu dosya için yeniden üretim yapılmadı, sonraki işlerde baştan ASCII ver.
 - [ ] Fuji'nin alt koyu kütlesi Dağ grubuna verildi; kullanıcı başka istiyor mu?
 - [ ] Siyah katmanlardaki yarı saydam kâğıt dokusu kabul mü, eşikle sıfırlansın mı (daha temiz, kenar yumuşaklığı azalır)?
 - [ ] Bölge maskesini otomatik çıkaran genel yol yok (örnek el çizimi çokgenlerle kılavuzlu); başka görselde yeniden kurulacak.
