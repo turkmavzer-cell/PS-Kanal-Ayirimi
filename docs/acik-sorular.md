@@ -55,3 +55,10 @@
 
 - [ ] "Lap" tam olarak ne demek? (Erkut'a sor: düz taban + tram mı, üst üste baskı mı?) Cevaba göre film aşamasında taban filmi altlığı uygulanacak.
 - [ ] LAP=1 önizlemesi onaylanırsa `onizlemeden_ayir.py`'de taban + nokta üst üste (overprint) desteği.
+
+## Eklenenler (20 Ekim) — bölge/mürekkep katmanları
+- [ ] `japon_katmanli.psd` Photoshop'ta açılıp grup/katman yapısı ve alfa gözle kontrol edilmedi (yalnız psd-tools ile okundu).
+- [ ] Teslim edilen PSD'nin adları Türkçe karakterli (kural ihlali). ASCII adlı sürüm üretilip İndirilenler'e yazılsın mı? (`bolge_murekkep_katman.py` hazır, sınandı.)
+- [ ] Fuji'nin alt koyu kütlesi Dağ grubuna verildi; kullanıcı başka istiyor mu?
+- [ ] Siyah katmanlardaki yarı saydam kâğıt dokusu kabul mü, eşikle sıfırlansın mı (daha temiz, kenar yumuşaklığı azalır)?
+- [ ] Bölge maskesini otomatik çıkaran genel yol yok (örnek el çizimi çokgenlerle kılavuzlu); başka görselde yeniden kurulacak.
