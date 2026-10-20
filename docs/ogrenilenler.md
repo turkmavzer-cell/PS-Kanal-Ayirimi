@@ -202,3 +202,7 @@ Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol ara
 - [2026-10-20] Dokulu kırmızıda tek kırmızı yetmez, ikinci "Açık Kırmızı" katmanı ekle; bölgede o mürekkep yoksa (ör. dağda kırmızı) katmanı hiç açma. Siyah katman kâğıt dokusunu yarı saydam taşır; kabul edilebilir mi, kullanıcıya sor.
 - [2026-10-20] Katman adlarını **baştan ASCII ver** (Gunes, Dag, Ev, Geri_Kalanlar, Siyah, Acik_Kirmizi, Kirmizi, Krem, Orijinal_referans). Türkçe adı sonradan `layer.name` ile atamak çalışıyor ama kuralı bozuyor; bir teslimde bu yapıldı ve ihlal sayıldı.
 - [2026-10-20] İş önce Sarman'a gösterilir, sonra teslim edilir: ilk PSD'nin bölge sınırları gözle bakıldığında kabul edilebilir görünüyordu, %100 kesit denetimi dikdörtgen basamak ve düz kesikleri yakaladı.
+
+## Onaylı örnek dosya (654)
+- [2026-10-20] Kullanıcının onaylı dosyası incelendi: CMYK katmanlı hazırlık + ton dilimli spot kanallar + sert birleşim alt taban + 1 bit AM tram 45 lpi 15° + ayrı logo kanalı, 508 PPI. Ayrıntı ve açık sorular: `docs/onayli-dosya-654-calisma-stili.md`.
+
