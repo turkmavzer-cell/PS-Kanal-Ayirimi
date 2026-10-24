@@ -219,3 +219,10 @@ Test görseli: Gemini üretimi mandala + "BE BRAVE" tipografi (`Gemini_Generated
 - **Kural ihlali (bu günlüğe sonradan yazıldı):** Teslim edilen PSD'de grup/katman adları Türkçe karakterli (Güneş, Dağ, Kırmızı...). `CLAUDE.md` ASCII ad ister. psd-tools'ta Türkçe adı `create_*` içine vermek MacRoman hatası verdi; ad sonradan `layer.name` ile Unicode atandı, eski Pascal ad ASCII yazıldı. Oysa kural baştan ASCII ad kullanmaktır. Düzeltme yolu: `tools/katman/bolge_murekkep_katman.py` ASCII adla aynı sonucu üretir (yeniden birleştirme farkı ≈ aynı: ort 5,4 vs 5,3).
 - Araç: `tools/katman/bolge_murekkep_katman.py girdi bolgeler.npz cikti.psd [--ceza ...]` (genel kısım). Bölge maskesi örneği: `tools/katman/ornekler/bolgeler_japon.py` (bu görsele özgü, el çizimi kılavuz çokgenler + piksel eşikleri; başka görselde yeniden yazılır).
 - **Kullanıcı onayı (2026-10-20):** PSD açıldı, "başarılı, katmanlar başarılı şekilde ayrıştırılmış". Yöntem (bölge grubu × mürekkep katmanı, kısıtlı en küçük kareler + sızıntı cezası) bu tür az mürekkepli baskı görselleri için doğrulanmış kabul edilir. Photoshop'ta Türkçe adlı grup/katmanlar sorunsuz görüntülendi; yine de kural ASCII ad.
+
+
+## 2026-10-24 — Katmanlara ayırma: Şeytani Zırh (armor.jfif, 1696x2528)
+- **İstek:** `armor.jfif` görselini zırh parçalarına (omuzluk, kafatası, kemer, toka, göğüs, zemin vb.) kusursuz PSD katmanlarına ayırmak.
+- **Deneme ve Sonuç:** Otomatik üretilen katmanlarda koordinat kutusu kesikleri, kavisli yüzeylerde düz bıçak kesimleri, kafatasında 35 iç delik ve kopuk piksel adaları oluştu.
+- **Referans Dosya:** Kullanıcı `C:\Users\dell\Downloads\örnek katman.psd` dosyasını paylaştı. Katmanların renk ayrımı değil, illüstrasyon/nesne hiyerarşisi (Zemin, Göğüs, Karın, Kemer, Toka, Omuzluk) olduğu doğrulandı.
+- **Alınan Karar:** Kusurlar tespit edilip `docs/katman-ayirma-rehberi.md` ve `docs/ogrenilenler.md` içerisine işlendi. Kullanıcının talimatıyla yeni model oturumuna temiz aktarım için tüm bulgular repoya işlendi.

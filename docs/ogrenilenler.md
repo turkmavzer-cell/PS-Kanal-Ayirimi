@@ -206,3 +206,17 @@ Karar ölçütleri: `docs/arastirma/gorsel-analiz-karar-rehberi.md`. Kontrol ara
 ## Onaylı örnek dosya (654)
 - [2026-10-20] Kullanıcının onaylı dosyası incelendi: CMYK katmanlı hazırlık + ton dilimli spot kanallar + sert birleşim alt taban + 1 bit AM tram 45 lpi 15° + ayrı logo kanalı, 508 PPI. Ayrıntı ve açık sorular: `docs/onayli-dosya-654-calisma-stili.md`.
 
+
+
+## Zırh ve İllüstrasyon Katman Ayırma Dersi (2026-10-24, armor.jfif / örnek katman.psd)
+- **Kullanıcı Geri Bildirimi:** "yaptığın katman ayrımı çok alakasız ve bozuk. senden istediğimi indirilenlerde örnek katman isminde oluşturup koydum... hiç bir layer kusursuz değil. hepsi yanlış katman olarak ayrıldı."
+- **Kök Nedenler (5 Ölümcül Hata):**
+  1. **Bounding Box Kesimi (Box-Clipping Antipattern):** Zincir veya yıldız gibi ufak detayları koordinat kutusuyla (`[x0, y0, x1, y1]`) ayırmaya çalışmak, alttaki göğüs zırhında dikdörtgen delikler açtı ve anlamsız dikdörtgen görsel blokları üretti.
+  2. **Kavisli Zırhta Düz Poligon Kesimi:** Karın plakaları ayrılırken organik kavis yerine düz çizgili poligon kullanılması, bronz kenarlıkları ve kırmızı deriyi bıçakla kesilmiş gibi böldü.
+  3. **Anatomik Bütünü Delik Deşik Etme:** Kafatasının karanlık veya parlak bölgelerini renk/parlaklık eşiğiyle ayırmak kafatasında 35 iç delik oluşturdu (göz çukuru, ağız içi, diş araları boşaldı). Kafatası tek başına içi dolu katı bir nesne olmalı, göz ışığı onun üstüne binmelidir.
+  4. **Koordinat Dilimleri ve Çöp Parçalar:** Mantıksal terslemeler (`~mask`) göğüs zırhında 52 kopuk piksel adası bıraktı ve zırhın kemere kadar sarkmasına (`Y=2206`) sebep oldu.
+  5. **1-Bit Sert Kenarlar:** Yarı saydam geçiş pikseli 0 olan sert kenarlar estetik bozulmaya ve tırtıklara yol açtı. Kenarlarda 1-1.5 px alt-piksel yumuşatma (`sub-pixel alpha matting`) şarttır.
+- **Doğru Katman Paradigması (örnek katman.psd referansı):**
+  - Katman ayırma renk kümeleme veya yapboz parçalama DEĞİLDİR. İllüstratörün çizdiği gibi **yapısal/fiziksel nesne izolasyonudur**.
+  - Z-Index hiyerarşisi: Zemin -> Göğüs Zırhı ve Boyunluk -> Karın Zırhı Plakaları -> Kemer -> Kemer Tokası -> Omuzluklar -> İskelet Kafaları -> Göz Işıkları.
+  - Ayrıntılı kural ve SOP belgesi: `docs/katman-ayirma-rehberi.md`.

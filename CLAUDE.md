@@ -28,7 +28,12 @@ Bu repo, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı çalış
 - "Repoda güncelle / düzenle" = yalnızca kod ve doküman değişikliği + commit/push. Ayrım çalıştırma, kullanıcının bilgisayarına dosya yazma, Photoshop açma **yapılmaz**; kullanıcı ayrıca "işlem yap" demeden iş üretilmez.
 
 ## Katmanlara ayırma işi (renk ayrımı dışı)
-Görseli katmanlara ayır istenirse: önce analiz et (`tools/katman/zemin_desen_katman.py` mantığı: zemin + tek renk desen + alfa geçişi), sonra **kaç katman istendiğini sor** ve seçenekleri görselin yapısına göre kendin belirleyip sun (ör. 2: Zemin+Desen; 3: Zemin+Desen opak+Geçiş saydam). Zemin + üstte desen ise varsayılan öneri 2 katman. Katmanlar üst üste binince orijinal çıkmalı (ölç). Katman adlarında Türkçe karakter kullanma.
+Görseli katmanlara ayır istenirse: önce analiz et (`tools/katman/zemin_desen_katman.py` mantığı: zemin + tek renk desen + alfa geçişi), sonra **kaç katman istendiğini sor** ve seçenekleri görselin yapısına göre kendin belirleyip sun (ör. 2: Zemin+Desen; 3: Zemin+Desen opak+Geçiş saydam; illüstrasyon/zırh için 6-10 yapısal nesne). Katmanlar üst üste binince orijinal çıkmalı (ölç). Katman adlarında Türkçe karakter kullanma.
+- **Kritik Kurallar (SOP: `docs/katman-ayirma-rehberi.md`):**
+  1. Asla dikdörtgen koordinat kutusu (`bounding box`) ile nesne kesme; altta dikdörtgen oyuk bırakır.
+  2. Kavisli zırh/organik parçalarda düz poligon kesimi yapma; dikiş/birleşim kavislerini izle.
+  3. Kafatası/gövde gibi anatomik bütünlerin içini delik deşik etme (göz çukuru/ağız boşluğu delinmez, ışık ayrı üst katmandır).
+  4. 1-bit sert jilet kenar yasaktır; kenarlara 1-1.5 px alt-piksel yumuşatma uygula.
 
 ## Bozuk / giyilmiş görselden desen üretimi (Nano Banana Pro prompt işi)
 Kullanıcı kullanımı imkansız, bozuk, eksik veya model üzerinde giyilmiş tişört/elbise/kumaş görseli yükleyip düzeltilmesi / yeniden üretilmesi için prompt istediğinde:
