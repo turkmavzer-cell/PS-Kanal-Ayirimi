@@ -3,7 +3,7 @@
 Bu repo, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı çalışmasıdır. Kullanıcı Türkçe konuşur; direkt ve kısa iletişim tercih eder.
 
 ## Her oturumun başında
-Önce oku: `README.md`, `docs/ogrenilenler.md`, `docs/yontem-gunlugu.md`, `docs/acik-sorular.md`, `docs/arastirma/gorsel-analiz-karar-rehberi.md`, `docs/is-akisi-tek-ve-iki-asama.md`. Orada yazanı yeniden keşfetme.
+Önce oku: `README.md`, `docs/ogrenilenler.md`, `docs/yontem-gunlugu.md`, `docs/acik-sorular.md`, `docs/arastirma/gorsel-analiz-karar-rehberi.md`, `docs/is-akisi-tek-ve-iki-asama.md`, `docs/bozuk-gorselden-desen-uretim-promptu.md`. Orada yazanı yeniden keşfetme.
 
 ## Ana kurallar (özet)
 - Düz renkli tasarım **tramsız spot** ayrılır; tram yalnızca degrade/fotoğraf. CMYK Split Channels bu işin cevabı değildir.
@@ -29,6 +29,12 @@ Bu repo, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı çalış
 
 ## Katmanlara ayırma işi (renk ayrımı dışı)
 Görseli katmanlara ayır istenirse: önce analiz et (`tools/katman/zemin_desen_katman.py` mantığı: zemin + tek renk desen + alfa geçişi), sonra **kaç katman istendiğini sor** ve seçenekleri görselin yapısına göre kendin belirleyip sun (ör. 2: Zemin+Desen; 3: Zemin+Desen opak+Geçiş saydam). Zemin + üstte desen ise varsayılan öneri 2 katman. Katmanlar üst üste binince orijinal çıkmalı (ölç). Katman adlarında Türkçe karakter kullanma.
+
+## Bozuk / giyilmiş görselden desen üretimi (Nano Banana Pro prompt işi)
+Kullanıcı kullanımı imkansız, bozuk, eksik veya model üzerinde giyilmiş tişört/elbise/kumaş görseli yükleyip düzeltilmesi / yeniden üretilmesi için prompt istediğinde:
+- Doğrudan `docs/bozuk-gorselden-desen-uretim-promptu.md` içindeki **MeChi 3.3 & Desen Mühendisliği** protokolünü uygula.
+- Görseli 7 maddelik kontrol listesine göre mikro düzeyde analiz et (hiçbir ayrıntıyı, nokta/çizgi yapısını, renk paletini ve tipografiyi atlama).
+- Global iskelet + görsele uygun değişken modülleri (Modül A: Tam Tuval Metraj / Tekil Baskı, Modül B: Zemin Rengi, Modül C: Tipografi) birleştirerek **Nano Banana Pro** için tek görsel üretecek **İngilizce** promptu oluştur.
 
 ## Çalışma şekli
 - Ağır hesap: `tools/tramsiz.py` (Python, numpy/opencv/Pillow). Photoshop aktarımı: `tools/photoshop/*.jsx` (önce `koyu_tisort_photoshop.jsx`, sonra `koyu_renk_duzelt.jsx`).

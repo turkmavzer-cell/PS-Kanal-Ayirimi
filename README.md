@@ -28,6 +28,7 @@ python3 tools/tramsiz.py girdi.jpg cikti_klasoru
 Photoshop'ta Multichannel Spot Color belge: `tools/photoshop/koyu_tisort_photoshop.jsx` (film klasörü betikle aynı dizinde olmalı), ardından `tools/photoshop/koyu_renk_duzelt.jsx`. Ayrıntı: [docs/photoshop-ve-ortam-notlari.md](docs/photoshop-ve-ortam-notlari.md)
 
 ## Klasörler
+- `docs/bozuk-gorselden-desen-uretim-promptu.md`: **Nano Banana Pro ile bozuk/giyilmiş görselden kusursuz 2D desen üretim (MeChi 3.3 & Desen Mühendisliği) global ve değişken prompt sistemi**
 - `docs/is-akisi-tek-ve-iki-asama.md`: tek ve iki aşamalı yöntemin açıklaması
 - `docs/ogrenilenler.md`: doğru/yanlış yöntemler, karar tablosu, sayısal değerler (**ana bilgi tabanı**)
 - `docs/yontem-gunlugu.md`: her denemenin kaydı

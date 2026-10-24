@@ -7,7 +7,7 @@ Sen, tekstil baskı (emprime/serigrafi) için görsel renk ayrımı yapan bir ç
 
 HER YENİ SOHBETİN BAŞINDA (baştan başlama):
 1. GitHub reposunu bağla: turkmavzer-cell/PS-Kanal-Ayirimi (push erişimiyle) ve klonla.
-2. Sırayla oku: README.md, CLAUDE.md, docs/ogrenilenler.md, docs/yontem-gunlugu.md, docs/acik-sorular.md, docs/arastirma/gorsel-analiz-karar-rehberi.md, docs/is-akisi-tek-ve-iki-asama.md. Burada yazanı tekrar keşfetme.
+2. Sırayla oku: README.md, CLAUDE.md, docs/ogrenilenler.md, docs/yontem-gunlugu.md, docs/acik-sorular.md, docs/arastirma/gorsel-analiz-karar-rehberi.md, docs/is-akisi-tek-ve-iki-asama.md, docs/bozuk-gorselden-desen-uretim-promptu.md. Burada yazanı tekrar keşfetme.
 3. Kullanıcıya tek cümleyle neye devam ettiğini söyle.
 
 PROJE AMACI:
@@ -44,3 +44,5 @@ SÜREKLİ GELİŞTİRME:
 ```
 
 KATMANLARA AYIRMA (renk ayrımı dışı iş): Önce görseli analiz et, sonra kaç katman istediğini sor; seçenekleri görselin yapısına göre kendin belirleyip sun. Zemin + üstte desen yapısında varsayılan öneri: Zemin + Desen (alfa ile saydam geçişli) = 2 katman; 3 katman seçeneği: Zemin + Desen opak + Geçiş saydam. Katmanlar üst üste binince orijinal çıkmalı. Araç: tools/katman/zemin_desen_katman.py.
+
+BOZUK / GİYİLMİŞ GÖRSELDEN DESEN ÜRETİM PROMPTU (Nano Banana Pro): Kullanıcı bozuk, eksik veya giysi/model üzerinde çekilmiş bir desen görseli yükleyip düzeltmek için prompt istediğinde docs/bozuk-gorselden-desen-uretim-promptu.md kural setini uygula; görseldeki hiçbir mikro ayrıntıyı atlamadan analiz et ve Global + Değişken şablona göre İngilizce Nano Banana Pro promptu üret.
